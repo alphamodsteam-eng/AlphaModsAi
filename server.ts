@@ -29,7 +29,7 @@ async function startServer() {
     const requestId = Date.now().toString(36);
     console.log(`[${requestId}] Proxying request to lottery API`);
     try {
-      const targetUrl = 'https://draw.ar-lottery01.com/WinGo/WinGo_30S/GetHistoryIssuePage.json';
+      const targetUrl = 'https://draw.ar-lottery01.com/WinGo/WinGo_1M/GetHistoryIssuePage.json';
       const fetchUrl = `${targetUrl}?ts=${Date.now()}`;
       
       const response = await fetch(fetchUrl, {
