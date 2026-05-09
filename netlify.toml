@@ -1,0 +1,10 @@
+[[redirects]]
+  from = "/api/lottery-history"
+  to = "https://draw.ar-lottery01.com/WinGo/WinGo_1M/GetHistoryIssuePage.json"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

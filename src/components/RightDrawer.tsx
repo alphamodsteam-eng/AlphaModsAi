@@ -77,7 +77,12 @@ export default function RightDrawer({ isOpen, onClose, history }: RightDrawerPro
               </a>
 
               <button 
-                onClick={() => { /* Implement clipboard copy logic if needed */ }}
+                onClick={() => {
+                  const latest = history[0];
+                  const text = `LAXI PREDICTOR\nPeriod: ${latest?.period || 'N/A'}\nPrediction: ${latest?.prediction || 'N/A'}\nConfidence: ${latest?.confidence || 0}%\nJoin: https://t.me/+AadmWHsdiEQ0ZDE1`;
+                  navigator.clipboard.writeText(text);
+                  alert('Prediction copied to clipboard!');
+                }}
                 className="flex items-center justify-center gap-2 w-full p-3 bg-gray-900 text-white rounded-2xl text-sm font-bold hover:bg-gray-800 transition-all"
               >
                 <Clipboard className="w-4 h-4" />

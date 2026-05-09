@@ -224,6 +224,9 @@ export function useWingoData() {
         data = JSON.parse(rawText);
       } catch (e) {
         console.error("JSON parse failed. Raw body:", rawText.slice(0, 1000));
+        if (rawText.includes("<!DOCTYPE html>") || rawText.includes("Page not found")) {
+           throw new Error("API Proxy not found. If hosting on Netlify, please ensure the _redirects file is deployed or use a platform that supports Node.js.");
+        }
         throw new Error("Failed to parse response as JSON. Check console for body.");
       }
       if (data.code === 0 && data.data?.list) {
