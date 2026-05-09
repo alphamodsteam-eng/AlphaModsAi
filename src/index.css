@@ -1,0 +1,71 @@
+@import "tailwindcss";
+
+/* Carousel */
+.card-carousel {
+  position: relative;
+  width: 100%;
+  height: 260px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: -1rem; /* Adjust if needed to fit beautifully at the top */
+  margin-bottom: 0.5rem;
+}
+
+/* Cards */
+.my-card {
+  position: absolute;
+  height: 14rem;
+  width: 8rem;
+  border-radius: 1rem;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+
+  transform: translate3d(0,0,0) scale(0.6);
+  transition: transform 0.45s ease, opacity 0.45s ease, background-image 0.8s ease-in-out;
+
+  backface-visibility: hidden;
+  will-change: transform, opacity, background-image;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Visible cards */
+.my-card.visible {
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.my-card.far-left-2 {
+  transform: translate3d(-9rem,0,0) scale(0.55);
+  opacity: 0.4;
+  z-index: 1;
+}
+
+.my-card.far-left-1 {
+  transform: translate3d(-4.5rem,0,0) scale(0.75);
+  opacity: 0.7;
+  z-index: 2;
+}
+
+.my-card.active {
+  transform: translate3d(0,0,0) scale(1);
+  opacity: 1;
+  z-index: 5;
+}
+
+.my-card.far-right-1 {
+  transform: translate3d(4.5rem,0,0) scale(0.75);
+  opacity: 0.7;
+  z-index: 2;
+}
+
+.my-card.far-right-2 {
+  transform: translate3d(9rem,0,0) scale(0.55);
+  opacity: 0.4;
+  z-index: 1;
+}
