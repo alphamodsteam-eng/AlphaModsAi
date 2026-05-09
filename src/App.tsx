@@ -11,6 +11,7 @@ import { NavItem } from './types';
 import { useWingoData } from './hooks/useWingoData';
 import WingoHome from './components/WingoHome';
 import WingoHistory from './components/WingoHistory';
+import PredictionNotification from './components/PredictionNotification';
 import { Settings, Shield, Clock, Crown } from 'lucide-react';
 
 export default function App() {
@@ -19,7 +20,18 @@ export default function App() {
   const wingo = useWingoData();
   const [profileName, setProfileName] = useState(() => localStorage.getItem('profileName') || 'Laxi User');
   const [profileImage, setProfileImage] = useState(() => localStorage.getItem('profileImage') || null);
+  const [portalUrl, setPortalUrl] = useState('');
+  const [loadedUrl, setLoadedUrl] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleLoadPortal = () => {
+    if (!portalUrl) return;
+    let url = portalUrl.trim();
+    if (!url.startsWith('http')) {
+      url = `https://${url}`;
+    }
+    setLoadedUrl(url);
+  };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -69,10 +81,39 @@ export default function App() {
           </div>
         </div>
         <div className={activeTab === 'web' ? 'block' : 'hidden'}>
-          <div className="flex flex-col items-center justify-center pt-20">
-            <h2 className="text-2xl font-black text-gray-800 uppercase tracking-tighter">Web Portal</h2>
-            <p className="text-gray-400 mt-2">Connect your data sources here.</p>
-          </div>
+          {loadedUrl ? (
+            <div className="fixed inset-0 top-16 bottom-20 z-10 bg-white">
+              <iframe 
+                src={loadedUrl} 
+                className="w-full h-full border-0"
+                title="Portal Content"
+              />
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center pt-20">
+              <div className="w-20 h-20 bg-gray-100 rounded-3xl flex items-center justify-center mb-6">
+                <Settings className="w-10 h-10 text-gray-400" />
+              </div>
+              <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tighter mb-2">Web Browser</h2>
+              <p className="text-gray-500 mb-8 font-medium text-center">Enter a URL to load your favorite website</p>
+              
+              <div className="w-full bg-white p-6 rounded-[32px] shadow-sm border border-gray-100 space-y-4">
+                <input 
+                  type="text" 
+                  placeholder="example.com"
+                  value={portalUrl}
+                  onChange={(e) => setPortalUrl(e.target.value)}
+                  className="w-full p-4 bg-gray-50 border-0 rounded-2xl text-sm focus:ring-2 focus:ring-sky-500"
+                />
+                <button 
+                  onClick={handleLoadPortal}
+                  className="w-full bg-gray-900 text-white rounded-2xl p-4 text-sm font-bold hover:bg-gray-800 transition-all"
+                >
+                  Load Website
+                </button>
+              </div>
+            </div>
+          )}
         </div>
         <div className={activeTab === 'profile' ? 'block' : 'hidden'}>
           <div className="flex flex-col pt-6 gap-6">
@@ -124,6 +165,12 @@ export default function App() {
       </main>
 
       <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
+      
+      <PredictionNotification 
+        result={wingo.lastResolved} 
+        history={wingo.predictionsHistory}
+        onClose={() => wingo.setLastResolved(null)} 
+      />
     </div>
   );
 }

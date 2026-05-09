@@ -165,6 +165,7 @@ export function useWingoData() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [lastResolved, setLastResolved] = useState<PredictionRecord | null>(null);
 
   const addOneToBigNumber = (numStr: string) => {
     let carry = 1;
@@ -190,13 +191,18 @@ export function useWingoData() {
   const fetchData = useCallback(async () => {
     try {
       setError(null);
-      const resp = await fetch(`${API_URL}?ts=${Date.now()}`);
+      // Use no-cache to ensure we always get fresh data
+      const resp = await fetch(`${API_URL}?ts=${Date.now()}`, {
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
+      });
       
-      // If we're on a static host and the proxy isn't working, this will likely fail or return HTML
       if (!resp.ok) {
         const errorText = await resp.text().catch(() => "Unknown error");
         if (resp.status === 404) {
-           throw new Error("API Proxy not found (404). If hosting on Netlify, please ensure netlify.toml is correct and functions/redirects are enabled.");
+           throw new Error("API Proxy not found (404). If hosting on Netlify, please ensure netlify.toml is correct and you have deployed it.");
         }
         throw new Error(`Network issue (${resp.status}): ${resp.statusText}`);
       }
@@ -206,16 +212,17 @@ export function useWingoData() {
       try {
         data = JSON.parse(rawText);
       } catch (e) {
+        // If we get HTML instead of JSON, it's usually a 404/Redirect page from the host
         if (rawText.toLowerCase().includes("<!doctype html>") || rawText.toLowerCase().includes("<html")) {
           throw new Error("Received HTML instead of API data. This usually means your hosting platform is serving a 404 page for the API route.");
         }
-        throw new Error("Invalid response format from API.");
+        throw new Error("Invalid response format from API. " + (rawText.slice(0, 50) + "..."));
       }
 
       if (data.code === 0 && data.data?.list) {
         setAllResults(currentResults => {
           const newList = data.data.list as LotteryResult[];
-          // Only update if we have new data or different latest issue
+          // Update if newList is different from currentResults
           if (newList.length > 0 && (currentResults.length === 0 || newList[0].issueNumber !== currentResults[0].issueNumber)) {
             return newList;
           }
@@ -223,9 +230,14 @@ export function useWingoData() {
         });
       }
     } catch (err) {
+      // "Failed to fetch" is usually a network interruption or CORS issue
       const msg = err instanceof Error ? err.message : String(err);
-      console.error("Fetch issue:", msg);
-      setError(msg);
+      if (msg === "Failed to fetch") {
+        setError("Failed to reach API server. Check your internet connection or proxy settings.");
+      } else {
+        setError(msg);
+      }
+      console.warn("Fetch issue:", msg);
     }
   }, [advancedPredict]);
 
@@ -242,6 +254,7 @@ export function useWingoData() {
 
       // 1. Process pending predictions for the results we just got
       // We check all potential pending ones in case we missed some intervals
+      let resolvedRecord: PredictionRecord | null = null;
       updatedHistory = updatedHistory.map(record => {
         if (record.status === 'Pending') {
           // Find matching result in allResults
@@ -250,15 +263,21 @@ export function useWingoData() {
             const actual = parseInt(matchingResult.number) >= 5 ? "Big" : "Small";
             const isWin = record.prediction === actual;
             changed = true;
-            return {
+            const updated = {
               ...record,
               actual,
               status: isWin ? 'Win' : 'Loss' as const
             };
+            resolvedRecord = updated;
+            return updated;
           }
         }
         return record;
       });
+
+      if (resolvedRecord) {
+        setLastResolved(resolvedRecord);
+      }
 
       // 2. Predict for the next period if not already predicted
       if (!updatedHistory.some(r => r.period === upcomingPeriod)) {
@@ -298,6 +317,8 @@ export function useWingoData() {
     predictionsHistory,
     isLoading,
     error,
+    lastResolved,
+    setLastResolved,
     clearHistory,
     currentPeriod: allResults.length > 0 ? addOneToBigNumber(allResults[0].issueNumber) : '--',
     nextPrediction: allResults.length > 0 ? advancedPredict(allResults) : 'Calculating...'

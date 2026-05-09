@@ -67,7 +67,7 @@ export default function RightDrawer({ isOpen, onClose, history }: RightDrawerPro
               </div>
 
               <a 
-                href="https://t.me/+AadmWHsdiEQ0ZDE1" 
+                href="https://t.me/+zDMG6OFhIyExYzI9" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="flex items-center justify-center gap-2 w-full p-3 bg-sky-500 text-white rounded-2xl text-sm font-bold hover:bg-sky-600 transition-all"
@@ -79,7 +79,7 @@ export default function RightDrawer({ isOpen, onClose, history }: RightDrawerPro
               <button 
                 onClick={() => {
                   const latest = history[0];
-                  const text = `LAXI PREDICTOR\nPeriod: ${latest?.period || 'N/A'}\nPrediction: ${latest?.prediction || 'N/A'}\nConfidence: ${latest?.confidence || 0}%\nJoin: https://t.me/+AadmWHsdiEQ0ZDE1`;
+                  const text = `LAXI PREDICTOR\nPeriod: ${latest?.period || 'N/A'}\nPrediction: ${latest?.prediction || 'N/A'}\nConfidence: ${latest?.confidence || 0}%\nJoin: https://t.me/+zDMG6OFhIyExYzI9`;
                   navigator.clipboard.writeText(text);
                   alert('Prediction copied to clipboard!');
                 }}
