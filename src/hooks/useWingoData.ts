@@ -191,93 +191,35 @@ export function useWingoData() {
     try {
       setError(null);
       const resp = await fetch(`${API_URL}?ts=${Date.now()}`);
+      
+      // If we're on a static host and the proxy isn't working, this will likely fail or return HTML
       if (!resp.ok) {
         const errorText = await resp.text().catch(() => "Unknown error");
-        if (resp.status === 502 || resp.status === 503 || errorText.includes("Starting Server...")) {
-          console.warn("Server unavailable, retrying...");
-          return;
+        if (resp.status === 404) {
+           throw new Error("API Proxy not found (404). If hosting on Netlify, please ensure netlify.toml is correct and functions/redirects are enabled.");
         }
-        let details = resp.statusText;
-        try {
-          const errorData = JSON.parse(errorText);
-          details = errorData.error || errorData.details || details;
-        } catch (e) {
-          details = errorText.slice(0, 500) || details;
-        }
-        throw new Error(`Proxy error (${resp.status}): ${details}`);
+        throw new Error(`Network issue (${resp.status}): ${resp.statusText}`);
       }
 
-      const contentType = resp.headers.get("content-type");
       const rawText = await resp.text();
-
-      if (!contentType || !contentType.includes("application/json")) {
-        if (rawText.includes("<title>Starting Server...</title>") || rawText.includes("<!doctype html>")) {
-          console.warn("Dev server is still starting or restarting. Retrying soon...");
-          return; // Silently ignore and wait for next poll
-        }
-        console.error("Non-JSON response body:", rawText.slice(0, 1000));
-        throw new Error(`Expected JSON but got ${contentType || 'no content type'}. This usually means a 404 or redirect occurred.`);
-      }
-
       let data;
       try {
         data = JSON.parse(rawText);
       } catch (e) {
-        console.error("JSON parse failed. Raw body:", rawText.slice(0, 1000));
-        if (rawText.includes("<!DOCTYPE html>") || rawText.includes("Page not found")) {
-           throw new Error("API Proxy not found. If hosting on Netlify, please ensure the _redirects file is deployed or use a platform that supports Node.js.");
+        if (rawText.toLowerCase().includes("<!doctype html>") || rawText.toLowerCase().includes("<html")) {
+          throw new Error("Received HTML instead of API data. This usually means your hosting platform is serving a 404 page for the API route.");
         }
-        throw new Error("Failed to parse response as JSON. Check console for body.");
+        throw new Error("Invalid response format from API.");
       }
+
       if (data.code === 0 && data.data?.list) {
-        setError(null);
         setAllResults(currentResults => {
           const newList = data.data.list as LotteryResult[];
-          if (newList.length === 0) return newList;
-
-          const latestResult = newList[0];
-          const upcomingPeriod = addOneToBigNumber(latestResult.issueNumber);
-
-          setPredictionsHistory(prevHistory => {
-            let updatedHistory = [...prevHistory];
-            let changed = false;
-
-            // 1. Check if we need to update a pending prediction for the current latestResult
-            const pendingIndex = updatedHistory.findIndex(r => r.period === latestResult.issueNumber && r.status === 'Pending');
-            if (pendingIndex !== -1) {
-              const pendingRecord = updatedHistory[pendingIndex];
-              const actual = parseInt(latestResult.number) >= 5 ? "Big" : "Small";
-              const isWin = pendingRecord.prediction === actual;
-              
-              updatedHistory[pendingIndex] = {
-                ...pendingRecord,
-                actual,
-                status: isWin ? 'Win' : 'Loss'
-              };
-              changed = true;
-            }
-
-            // 2. Ensure we have a prediction for the upcoming period
-            if (!updatedHistory.some(r => r.period === upcomingPeriod)) {
-              const nextPred = advancedPredict(newList);
-              const upcomingRecord: PredictionRecord = {
-                period: upcomingPeriod,
-                prediction: nextPred,
-                status: 'Pending',
-                confidence: Math.floor(Math.random() * (95 - 75 + 1) + 75)
-              };
-              updatedHistory = [upcomingRecord, ...updatedHistory];
-              changed = true;
-            }
-
-            if (changed) {
-              localStorage.setItem('predictionsHistory', JSON.stringify(updatedHistory));
-              return updatedHistory;
-            }
-            return prevHistory;
-          });
-
-          return newList;
+          // Only update if we have new data or different latest issue
+          if (newList.length > 0 && (currentResults.length === 0 || newList[0].issueNumber !== currentResults[0].issueNumber)) {
+            return newList;
+          }
+          return currentResults;
         });
       }
     } catch (err) {
@@ -286,6 +228,58 @@ export function useWingoData() {
       setError(msg);
     }
   }, [advancedPredict]);
+
+  // Handle predictions history updates whenever allResults changes
+  useEffect(() => {
+    if (allResults.length === 0) return;
+
+    const latestResult = allResults[0];
+    const upcomingPeriod = addOneToBigNumber(latestResult.issueNumber);
+
+    setPredictionsHistory(prevHistory => {
+      let updatedHistory = [...prevHistory];
+      let changed = false;
+
+      // 1. Process pending predictions for the results we just got
+      // We check all potential pending ones in case we missed some intervals
+      updatedHistory = updatedHistory.map(record => {
+        if (record.status === 'Pending') {
+          // Find matching result in allResults
+          const matchingResult = allResults.find(r => r.issueNumber === record.period);
+          if (matchingResult) {
+            const actual = parseInt(matchingResult.number) >= 5 ? "Big" : "Small";
+            const isWin = record.prediction === actual;
+            changed = true;
+            return {
+              ...record,
+              actual,
+              status: isWin ? 'Win' : 'Loss' as const
+            };
+          }
+        }
+        return record;
+      });
+
+      // 2. Predict for the next period if not already predicted
+      if (!updatedHistory.some(r => r.period === upcomingPeriod)) {
+        const nextPred = advancedPredict(allResults);
+        const upcomingRecord: PredictionRecord = {
+          period: upcomingPeriod,
+          prediction: nextPred,
+          status: 'Pending',
+          confidence: Math.floor(Math.random() * (95 - 75 + 1) + 75)
+        };
+        updatedHistory = [upcomingRecord, ...updatedHistory];
+        changed = true;
+      }
+
+      if (changed) {
+        localStorage.setItem('predictionsHistory', JSON.stringify(updatedHistory));
+        return updatedHistory;
+      }
+      return prevHistory;
+    });
+  }, [allResults, advancedPredict]);
 
   useEffect(() => {
     setIsLoading(true);
