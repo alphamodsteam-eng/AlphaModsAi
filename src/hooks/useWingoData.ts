@@ -164,6 +164,7 @@ export function useWingoData() {
     return saved ? JSON.parse(saved) : [];
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const addOneToBigNumber = (numStr: string) => {
     let carry = 1;
@@ -188,6 +189,7 @@ export function useWingoData() {
 
   const fetchData = useCallback(async () => {
     try {
+      setError(null);
       const resp = await fetch(`${API_URL}?ts=${Date.now()}`);
       if (!resp.ok) {
         const errorText = await resp.text().catch(() => "Unknown error");
@@ -225,6 +227,7 @@ export function useWingoData() {
         throw new Error("Failed to parse response as JSON. Check console for body.");
       }
       if (data.code === 0 && data.data?.list) {
+        setError(null);
         setAllResults(currentResults => {
           const newList = data.data.list as LotteryResult[];
           if (newList.length === 0) return newList;
@@ -275,7 +278,9 @@ export function useWingoData() {
         });
       }
     } catch (err) {
-      console.warn("Fetch issue:", err instanceof Error ? err.message : String(err));
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error("Fetch issue:", msg);
+      setError(msg);
     }
   }, [advancedPredict]);
 
@@ -295,6 +300,7 @@ export function useWingoData() {
     allResults,
     predictionsHistory,
     isLoading,
+    error,
     clearHistory,
     currentPeriod: allResults.length > 0 ? addOneToBigNumber(allResults[0].issueNumber) : '--',
     nextPrediction: allResults.length > 0 ? advancedPredict(allResults) : 'Calculating...'

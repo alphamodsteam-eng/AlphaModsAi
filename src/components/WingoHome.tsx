@@ -9,9 +9,10 @@ interface WingoHomeProps {
   allResults: LotteryResult[];
   predictionsHistory: PredictionRecord[];
   isLoading: boolean;
+  error: string | null;
 }
 
-export default function WingoHome({ currentPeriod, nextPrediction, allResults, predictionsHistory, isLoading }: WingoHomeProps) {
+export default function WingoHome({ currentPeriod, nextPrediction, allResults, predictionsHistory, isLoading, error }: WingoHomeProps) {
   const latestTen = allResults.slice(0, 10);
   
   // Calculate Big/Small distribution
@@ -26,6 +27,18 @@ export default function WingoHome({ currentPeriod, nextPrediction, allResults, p
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pt-4">
       
       <ImageSlider />
+
+      {error && (
+        <div className="bg-red-50 border border-red-100 p-4 rounded-2xl flex items-center gap-3 animate-in fade-in zoom-in duration-300">
+          <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+            <span className="text-red-600 font-bold">!</span>
+          </div>
+          <div className="flex flex-col">
+            <span className="text-red-800 text-xs font-bold uppercase tracking-wider">Network Error</span>
+            <span className="text-red-600 text-[10px] opacity-80 leading-tight">{error}</span>
+          </div>
+        </div>
+      )}
 
       {/* Results Box - Redesigned */}
       <div className="relative overflow-hidden bg-white/90 backdrop-blur-xl border border-white/60 rounded-[32px] p-6 shadow-[0_8px_40px_rgb(0,0,0,0.04)] ring-1 ring-gray-900/5">

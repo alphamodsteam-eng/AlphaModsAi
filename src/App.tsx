@@ -53,6 +53,7 @@ export default function App() {
             allResults={wingo.allResults}
             predictionsHistory={wingo.predictionsHistory}
             isLoading={wingo.isLoading}
+            error={wingo.error}
           />
         </div>
         <div className={activeTab === 'history' ? 'block' : 'hidden'}>

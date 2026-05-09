@@ -30,6 +30,7 @@ async function startServer() {
     console.log(`[${requestId}] Proxying request to lottery API`);
     try {
       const targetUrl = 'https://draw.ar-lottery01.com/WinGo/WinGo_1M/GetHistoryIssuePage.json';
+      console.log(`[${requestId}] Fetching from: ${targetUrl}`);
       const fetchUrl = `${targetUrl}?ts=${Date.now()}`;
       
       const response = await fetch(fetchUrl, {
@@ -45,7 +46,7 @@ async function startServer() {
       });
 
       const contentType = response.headers.get('content-type') || '';
-      console.log(`[${requestId}] External response status: ${response.status}, Content-Type: ${contentType}`);
+      console.log(`[${requestId}] Status: ${response.status}, Content-Type: ${contentType}`);
 
       if (!response.ok) {
         const text = await response.text().catch(() => 'No body');
