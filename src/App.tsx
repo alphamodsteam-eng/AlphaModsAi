@@ -3,12 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion } from 'motion/react';
 import Header from './components/Header';
 import BottomNav from './components/BottomNav';
 import RightDrawer from './components/RightDrawer';
-import LoginPage from './components/LoginPage';
 import { NavItem } from './types';
 import { useWingoData } from './hooks/useWingoData';
 import WingoHome from './components/WingoHome';
@@ -17,7 +16,6 @@ import PredictionNotification from './components/PredictionNotification';
 import { Settings, Shield, Clock, Crown, User } from 'lucide-react';
 
 export default function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(() => localStorage.getItem('isUserAuthenticated') === 'true');
   const [activeTab, setActiveTab] = useState<NavItem>('home');
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const wingo = useWingoData();
@@ -54,13 +52,6 @@ export default function App() {
     setProfileName(newName);
     localStorage.setItem('profileName', newName);
   };
-
-  if (!isAuthenticated) {
-    return <LoginPage onLogin={() => {
-      setIsAuthenticated(true);
-      localStorage.setItem('isUserAuthenticated', 'true');
-    }} />;
-  }
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 font-sans">
