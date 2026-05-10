@@ -63,6 +63,7 @@ export default function App() {
           <WingoHome 
             currentPeriod={wingo.currentPeriod}
             nextPrediction={wingo.nextPrediction}
+            nextConfidence={wingo.nextConfidence}
             allResults={wingo.allResults}
             predictionsHistory={wingo.predictionsHistory}
             isLoading={wingo.isLoading}

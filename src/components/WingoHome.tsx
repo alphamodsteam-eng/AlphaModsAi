@@ -6,13 +6,14 @@ import StatsDashboard from './StatsDashboard';
 interface WingoHomeProps {
   currentPeriod: string;
   nextPrediction: string;
+  nextConfidence: number;
   allResults: LotteryResult[];
   predictionsHistory: PredictionRecord[];
   isLoading: boolean;
   error: string | null;
 }
 
-export default function WingoHome({ currentPeriod, nextPrediction, allResults, predictionsHistory, isLoading, error }: WingoHomeProps) {
+export default function WingoHome({ currentPeriod, nextPrediction, nextConfidence, allResults, predictionsHistory, isLoading, error }: WingoHomeProps) {
   const latestTen = allResults.slice(0, 10);
   
   // Calculate Big/Small distribution
@@ -20,8 +21,7 @@ export default function WingoHome({ currentPeriod, nextPrediction, allResults, p
   const smallCount = latestTen.length - bigCount;
   const bigPercent = latestTen.length > 0 ? (bigCount / latestTen.length) * 100 : 50;
 
-  const confBase = parseInt(currentPeriod.slice(-2), 10);
-  const confidenceScore = isNaN(confBase) ? 85 : 82 + (confBase % 15);
+  const confidenceScore = nextConfidence;
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pt-4">
