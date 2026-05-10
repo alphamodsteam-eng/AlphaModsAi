@@ -9,11 +9,11 @@ interface BottomNavProps {
 
 export default function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
   const navItems = [
-    { id: 'home', icon: Home, label: 'Home' },
-    { id: 'history', icon: History, label: 'History' },
-    { id: 'sparkles', icon: Sparkles, label: 'Predict' },
-    { id: 'web', icon: Globe, label: 'Web' },
-    { id: 'profile', icon: User, label: 'Profile' },
+    { id: 'home', icon: Home, label: 'HOME' },
+    { id: 'history', icon: History, label: 'HISTORY' },
+    { id: 'sparkles', icon: Sparkles, label: 'PREDICT' },
+    { id: 'web', icon: Globe, label: 'WEB' },
+    { id: 'profile', icon: User, label: 'PROFILE' },
   ] as const;
 
   return (

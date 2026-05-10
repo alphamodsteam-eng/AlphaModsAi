@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 const IMAGES = [
   "https://iili.io/Kn7y6ut.png",

@@ -1,23 +1,50 @@
 import { PredictionRecord } from '../hooks/useWingoData';
 import { motion, AnimatePresence } from 'motion/react';
-import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { CheckCircle, XCircle, Loader2, User, X } from 'lucide-react';
 
 interface WingoHistoryProps {
   history: PredictionRecord[];
   clearHistory: () => void;
+  profileName: string;
+  profileImage: string | null;
 }
 
-export default function WingoHistory({ history, clearHistory }: WingoHistoryProps) {
+export default function WingoHistory({ history, clearHistory, profileName, profileImage }: WingoHistoryProps) {
+  const wins = history.filter(h => h.status === 'Win').length;
+  const losses = history.filter(h => h.status === 'Loss').length;
+  const totalBets = wins + losses;
+  const accuracy = totalBets > 0 ? Math.round((wins / totalBets) * 100) : 0;
+
   return (
-    <div className="space-y-4 pb-20">
-      {/* Header */}
+    <div className="space-y-6 pb-20">
+      {/* Stats Dashboard - Decreased sizes */}
+      <div className="grid grid-cols-2 gap-2">
+        <div className="bg-white/50 p-3 rounded-[20px] border-2 border-dashed border-emerald-200 flex justify-between items-center">
+          <span className="text-emerald-500 font-black text-[12px]">Pass</span>
+          <span className="text-emerald-500 font-black text-2xl">{wins}</span>
+        </div>
+        <div className="bg-white/50 p-3 rounded-[20px] border-2 border-dashed border-rose-200 flex justify-between items-center">
+          <span className="text-rose-500 font-black text-[12px]">Fail</span>
+          <span className="text-rose-500 font-black text-2xl">{losses}</span>
+        </div>
+        <div className="col-span-2 bg-white/50 p-4 rounded-[20px] border-2 border-dashed border-gray-200 flex justify-between items-center">
+          <span className="text-gray-500 font-black text-[14px]">Accuracy</span>
+          <span className="text-gray-400 font-black text-3xl">{accuracy}%</span>
+        </div>
+        <div className="col-span-2 bg-white/50 p-4 rounded-[20px] border-2 border-dashed border-purple-200 flex justify-between items-center">
+          <span className="text-purple-500 font-black text-[14px]">Bets</span>
+          <span className="text-purple-500 font-black text-3xl">{totalBets}</span>
+        </div>
+      </div>
+
+      {/* Header - No box styling */}
       <div className="flex justify-between items-center px-1">
-        <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Prediction History</h2>
+        <h2 className="text-[12px] font-black uppercase tracking-widest text-gray-400">PREDICTION HISTORY</h2>
         <button 
           onClick={clearHistory}
-          className="text-[10px] font-black uppercase tracking-[0.2em] text-red-500 hover:text-red-600 transition-colors"
+          className="text-rose-500 hover:text-rose-600 transition-colors"
         >
-          Delete All
+          <X className="w-5 h-5" />
         </button>
       </div>
 
@@ -48,8 +75,8 @@ export default function WingoHistory({ history, clearHistory }: WingoHistoryProp
               <div className="pl-5 pr-5 pt-3">
                 {/* Top Row: Period and Time */}
                 <div className="flex justify-between items-center mb-4">
-                  <span className="font-mono font-bold text-xs text-gray-800">#{p.period}</span>
-                  <span className={`${isWin ? 'bg-green-100 text-green-600' : isLoss ? 'bg-red-100 text-red-600' : 'bg-sky-100 text-sky-600'} text-[9px] font-black px-2 py-0.5 rounded-md uppercase`}>WINGO 1 MIN</span>
+                  <span className="font-mono font-black text-sm text-gray-800 uppercase tracking-tighter">#{p.period}</span>
+                  <span className={`${isWin ? 'bg-green-100 text-green-600' : isLoss ? 'bg-red-100 text-red-600' : 'bg-sky-100 text-sky-600'} text-[10px] font-black px-2 py-0.5 rounded-md uppercase`}>WINGO 1 MIN</span>
                 </div>
 
                 {/* Prediction/Actual Box */}
@@ -71,7 +98,7 @@ export default function WingoHistory({ history, clearHistory }: WingoHistoryProp
                 </div>
 
                 {/* Footer */}
-                <div className={`flex justify-between items-center text-[9px] font-black uppercase tracking-widest border-t ${isWin ? 'border-green-100 text-green-600' : isLoss ? 'border-red-100 text-red-600' : 'border-sky-100 text-sky-600'} pt-3`}>
+                <div className={`flex justify-between items-center text-[10px] font-black uppercase tracking-widest border-t ${isWin ? 'border-green-100 text-green-600' : isLoss ? 'border-red-100 text-red-600' : 'border-sky-100 text-sky-600'} pt-3`}>
                   <div className="flex items-center gap-2">
                     <span>LAXI PREDICTOR</span>
                     <span>•</span>

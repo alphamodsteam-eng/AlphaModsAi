@@ -61,7 +61,7 @@ export default function StatsDashboard({ history, allResults }: StatsDashboardPr
     >
       <div className="flex justify-between items-start mb-6">
         <div>
-          <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-1">Your Total Bets</h3>
+          <h3 className="text-[12px] font-black text-gray-500 uppercase tracking-[0.2em] mb-1">Your Total Bets</h3>
           <div className="text-4xl font-black text-rose-500">
             <AnimatedNumber value={totalBets} />
           </div>
@@ -94,7 +94,7 @@ export default function StatsDashboard({ history, allResults }: StatsDashboardPr
         <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
            <div className="flex items-center gap-2 mb-2 text-green-600">
              <BadgeCheck className="w-4 h-4" />
-             <span className="text-[9px] font-black uppercase tracking-wider">Pass</span>
+             <span className="text-[10px] font-black uppercase tracking-wider">Pass</span>
            </div>
            <div className="text-2xl font-black text-gray-900">
             <AnimatedNumber value={wins} />
@@ -103,7 +103,7 @@ export default function StatsDashboard({ history, allResults }: StatsDashboardPr
         <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
            <div className="flex items-center gap-2 mb-2 text-red-600">
              <BadgeAlert className="w-4 h-4" />
-             <span className="text-[9px] font-black uppercase tracking-wider">Loss</span>
+             <span className="text-[10px] font-black uppercase tracking-wider">Loss</span>
            </div>
            <div className="text-2xl font-black text-gray-900">
             <AnimatedNumber value={losses} />
@@ -130,7 +130,7 @@ export default function StatsDashboard({ history, allResults }: StatsDashboardPr
         <div className="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm">
            <div className="flex items-center gap-2 mb-4 text-sky-600">
               <BarChart3 className="w-4 h-4" />
-              <span className="text-[9px] font-black uppercase tracking-wider">Number Frequency</span>
+              <span className="text-[10px] font-black uppercase tracking-wider">Number Frequency</span>
            </div>
            <div className="h-40">
              <ResponsiveContainer width="100%" height="100%">
@@ -146,7 +146,7 @@ export default function StatsDashboard({ history, allResults }: StatsDashboardPr
         <div className="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm">
            <div className="flex items-center gap-2 mb-4 text-rose-600">
               <LineChart className="w-4 h-4" />
-              <span className="text-[9px] font-black uppercase tracking-wider">Trend Line</span>
+              <span className="text-[10px] font-black uppercase tracking-wider">Trend Line</span>
            </div>
            <div className="h-40">
              <ResponsiveContainer width="100%" height="100%">

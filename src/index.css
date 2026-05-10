@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+body {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+}
+
 /* Carousel */
 .card-carousel {
   position: relative;

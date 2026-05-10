@@ -16,10 +16,10 @@ export default function RightDrawer({ isOpen, onClose, history }: RightDrawerPro
   const accuracy = totalBets > 0 ? Math.round((wins / totalBets) * 100) : 0;
 
   const stats = [
-    { label: 'Wins', value: wins, icon: Sparkles, color: 'text-amber-500', bg: 'bg-amber-50' },
-    { label: 'Losses', value: losses, icon: Zap, color: 'text-blue-500', bg: 'bg-blue-50' },
-    { label: 'Accuracy', value: `${accuracy}%`, icon: Target, color: 'text-orange-500', bg: 'bg-orange-50' },
-    { label: 'Total', value: totalBets, icon: TrendingUp, color: 'text-teal-500', bg: 'bg-teal-50' },
+    { label: 'WINS', value: wins, icon: Sparkles, color: 'text-amber-500', bg: 'bg-amber-50' },
+    { label: 'LOSSES', value: losses, icon: Zap, color: 'text-blue-500', bg: 'bg-blue-50' },
+    { label: 'ACCURACY', value: `${accuracy}%`, icon: Target, color: 'text-orange-500', bg: 'bg-orange-50' },
+    { label: 'TOTAL', value: totalBets, icon: TrendingUp, color: 'text-teal-500', bg: 'bg-teal-50' },
   ];
 
   return (
@@ -62,18 +62,18 @@ export default function RightDrawer({ isOpen, onClose, history }: RightDrawerPro
 
             <div className="mt-auto space-y-3">
               <div className="text-center p-3 bg-gray-50 rounded-2xl">
-                <p className="text-xs text-gray-500 mb-1">Developer</p>
-                <p className="text-sm font-bold text-gray-900">@AlphaModsAi</p>
+                <p className="text-xs text-gray-500 mb-1 font-black uppercase">Developer</p>
+                <p className="text-sm font-black text-gray-900 uppercase">@AlphaModsAi</p>
               </div>
 
               <a 
                 href="https://t.me/+zDMG6OFhIyExYzI9" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 w-full p-3 bg-sky-500 text-white rounded-2xl text-sm font-bold hover:bg-sky-600 transition-all"
+                className="flex items-center justify-center gap-2 w-full p-3 bg-sky-500 text-white rounded-2xl text-sm font-black hover:bg-sky-600 transition-all uppercase"
               >
                 <Send className="w-4 h-4" />
-                Join Telegram
+                JOIN TELEGRAM
               </a>
 
               <button 
@@ -83,10 +83,10 @@ export default function RightDrawer({ isOpen, onClose, history }: RightDrawerPro
                   navigator.clipboard.writeText(text);
                   alert('Prediction copied to clipboard!');
                 }}
-                className="flex items-center justify-center gap-2 w-full p-3 bg-gray-900 text-white rounded-2xl text-sm font-bold hover:bg-gray-800 transition-all"
+                className="flex items-center justify-center gap-2 w-full p-3 bg-gray-900 text-white rounded-2xl text-sm font-black hover:bg-gray-800 transition-all uppercase"
               >
                 <Clipboard className="w-4 h-4" />
-                Copy Prediction
+                COPY PREDICTION
               </button>
             </div>
           </motion.div>

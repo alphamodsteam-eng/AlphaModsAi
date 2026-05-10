@@ -34,8 +34,8 @@ export default function WingoHome({ currentPeriod, nextPrediction, allResults, p
             <span className="text-red-600 font-bold">!</span>
           </div>
           <div className="flex flex-col">
-            <span className="text-red-800 text-xs font-bold uppercase tracking-wider">Network Error</span>
-            <span className="text-red-600 text-[10px] opacity-80 leading-tight">{error}</span>
+            <span className="text-red-800 text-xs font-black uppercase tracking-wider">Network Error</span>
+            <span className="text-red-600 text-[10px] font-black uppercase leading-tight">{error}</span>
           </div>
         </div>
       )}
@@ -113,7 +113,7 @@ export default function WingoHome({ currentPeriod, nextPrediction, allResults, p
               </div>
               <div className="flex flex-col">
                 <span className="text-[9px] font-black tracking-[0.2em] text-gray-400 uppercase mb-0.5">Wingo 1 Min</span>
-                <div className="text-sm font-black tracking-tight text-gray-900 font-mono">
+                <div className="text-sm font-black tracking-tight text-gray-900 font-mono uppercase">
                   {currentPeriod}
                 </div>
               </div>
@@ -230,7 +230,7 @@ export default function WingoHome({ currentPeriod, nextPrediction, allResults, p
           <div className="w-1 h-1 bg-gray-400 rounded-full group-hover:bg-sky-500 transition-colors delay-100" />
           <div className="w-1 h-1 bg-gray-400 rounded-full group-hover:bg-sky-500 transition-colors delay-200" />
         </div>
-        <span className="text-[10px] font-black uppercase tracking-[0.5em] text-gray-400">Advanced Engine v2.0</span>
+        <span className="text-[12px] font-black uppercase tracking-[0.5em] text-gray-400">Advanced Engine v2.0</span>
       </div>
     </div>
   );

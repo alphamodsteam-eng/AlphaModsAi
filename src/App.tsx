@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useRef } from 'react';
+import React, { useState, useRef } from 'react';
+import { motion } from 'motion/react';
 import Header from './components/Header';
 import BottomNav from './components/BottomNav';
 import RightDrawer from './components/RightDrawer';
@@ -12,7 +13,7 @@ import { useWingoData } from './hooks/useWingoData';
 import WingoHome from './components/WingoHome';
 import WingoHistory from './components/WingoHistory';
 import PredictionNotification from './components/PredictionNotification';
-import { Settings, Shield, Clock, Crown } from 'lucide-react';
+import { Settings, Shield, Clock, Crown, User } from 'lucide-react';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<NavItem>('home');
@@ -69,7 +70,12 @@ export default function App() {
           />
         </div>
         <div className={activeTab === 'history' ? 'block' : 'hidden'}>
-          <WingoHistory history={wingo.predictionsHistory} clearHistory={wingo.clearHistory} />
+          <WingoHistory 
+            history={wingo.predictionsHistory} 
+            clearHistory={wingo.clearHistory} 
+            profileName={profileName}
+            profileImage={profileImage}
+          />
         </div>
         <div className={activeTab === 'sparkles' ? 'block' : 'hidden'}>
           <div className="flex flex-col items-center justify-center pt-20">
@@ -95,7 +101,7 @@ export default function App() {
                 <Settings className="w-10 h-10 text-gray-400" />
               </div>
               <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tighter mb-2">Web Browser</h2>
-              <p className="text-gray-500 mb-8 font-medium text-center">Enter a URL to load your favorite website</p>
+              <p className="text-gray-500 mb-8 font-black text-center uppercase">Enter a URL to load your favorite website</p>
               
               <div className="w-full bg-white p-6 rounded-[32px] shadow-sm border border-gray-100 space-y-4">
                 <input 
@@ -107,7 +113,7 @@ export default function App() {
                 />
                 <button 
                   onClick={handleLoadPortal}
-                  className="w-full bg-gray-900 text-white rounded-2xl p-4 text-sm font-bold hover:bg-gray-800 transition-all"
+                  className="w-full bg-gray-900 text-white rounded-2xl p-4 text-sm font-black hover:bg-gray-800 transition-all uppercase"
                 >
                   Load Website
                 </button>
@@ -119,19 +125,38 @@ export default function App() {
           <div className="flex flex-col pt-6 gap-6">
             <div className="bg-white p-6 rounded-[32px] shadow-sm border border-gray-100 flex flex-col items-center">
               <input type="file" ref={fileInputRef} onChange={handleImageUpload} className="hidden" accept="image/*" />
-              <div 
-                className="w-24 h-24 bg-sky-100 rounded-full mb-4 flex items-center justify-center text-sky-600 font-black text-3xl overflow-hidden cursor-pointer"
+              <motion.div 
+                animate={{ 
+                  scale: [1, 1.05, 1],
+                  boxShadow: [
+                    "0 0 0px rgba(14, 165, 233, 0.2)",
+                    "0 0 20px rgba(14, 165, 233, 0.4)",
+                    "0 0 0px rgba(14, 165, 233, 0.2)"
+                  ]
+                }}
+                transition={{ 
+                  duration: 3, 
+                  repeat: Infinity, 
+                  ease: "easeInOut" 
+                }}
+                className="w-24 h-24 bg-sky-500 rounded-full mb-4 flex items-center justify-center text-white overflow-hidden cursor-pointer shadow-lg relative border-4 border-white"
                 onClick={() => fileInputRef.current?.click()}
               >
-                {profileImage ? <img src={profileImage} alt="Profile" className="w-full h-full object-cover" /> : 'L'}
-              </div>
+                {profileImage ? (
+                  <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-sky-400 to-sky-600 flex items-center justify-center">
+                    <User className="w-12 h-12 text-white fill-white/20" />
+                  </div>
+                )}
+              </motion.div>
               <input 
                 type="text" 
                 value={profileName} 
                 onChange={handleNameChange}
-                className="text-2xl font-black text-gray-900 tracking-tight text-center border-0 focus:ring-0"
+                className="text-2xl font-black text-gray-900 tracking-tight text-center border-0 focus:ring-0 uppercase"
               />
-              <p className="text-gray-500 font-medium text-sm">Pro User</p>
+              <p className="text-gray-500 font-black text-sm uppercase">Pro User</p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -145,7 +170,7 @@ export default function App() {
                   <div className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center">
                      <item.icon className="w-5 h-5 text-gray-500" />
                   </div>
-                  <span className="text-xs font-bold text-gray-700">{item.label}</span>
+                  <span className="text-xs font-black text-gray-700 uppercase">{item.label}</span>
                 </button>
               ))}
             </div>
@@ -153,10 +178,10 @@ export default function App() {
             <div className="bg-white p-6 rounded-[32px] shadow-sm border border-gray-100">
               <h3 className="text-lg font-black text-gray-900 mb-4 tracking-tight">Send Feedback</h3>
               <textarea 
-                className="w-full bg-gray-50 border-0 rounded-2xl p-4 text-sm focus:ring-2 focus:ring-sky-500 min-h-[120px]"
-                placeholder="Let us know what you think..."
+                className="w-full bg-gray-50 border-0 rounded-2xl p-4 text-sm focus:ring-2 focus:ring-sky-500 min-h-[120px] font-black uppercase"
+                placeholder="LET US KNOW WHAT YOU THINK..."
               />
-              <button className="w-full mt-4 bg-gray-900 text-white rounded-2xl p-4 text-sm font-bold hover:bg-gray-800 transition-all">
+              <button className="w-full mt-4 bg-gray-900 text-white rounded-2xl p-4 text-sm font-black hover:bg-gray-800 transition-all uppercase">
                 Submit Feedback
               </button>
             </div>
