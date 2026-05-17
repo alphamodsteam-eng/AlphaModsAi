@@ -29,7 +29,7 @@ export default function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
                 whileHover={{ scale: 1.05, rotate: 5 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => onTabChange(item.id)}
-                className="w-16 h-16 bg-sky-500 rounded-[22px] flex items-center justify-center border-4 border-white transition-all duration-300 shadow-sm"
+                className="w-16 h-16 bg-red-500 rounded-[22px] flex items-center justify-center border-4 border-white transition-all duration-300 shadow-sm"
                 id={`nav-${item.id}`}
               >
                 <Sparkles className="w-8 h-8 text-white stroke-[2.5px]" />
@@ -47,13 +47,13 @@ export default function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
           >
             <Icon
               className={`w-6 h-6 transition-colors duration-300 ${
-                isActive ? 'text-sky-500' : 'text-gray-400'
+                isActive ? 'text-red-500' : 'text-gray-400'
               }`}
             />
             {isActive && (
               <motion.div
                 layoutId="activeTab"
-                className="absolute -bottom-2 w-6 h-1 bg-sky-500 rounded-full"
+                className="absolute -bottom-2 w-6 h-1 bg-red-500 rounded-full"
                 transition={{ type: 'spring', stiffness: 300, damping: 30 }}
               />
             )}

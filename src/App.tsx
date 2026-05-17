@@ -19,7 +19,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<NavItem>('home');
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const wingo = useWingoData();
-  const [profileName, setProfileName] = useState(() => localStorage.getItem('profileName') || 'Laxi User');
+  const [profileName, setProfileName] = useState(() => localStorage.getItem('profileName') || 'Alpha Server V4 User');
   const [profileImage, setProfileImage] = useState(() => localStorage.getItem('profileImage') || null);
   const [portalUrl, setPortalUrl] = useState('');
   const [loadedUrl, setLoadedUrl] = useState('');
@@ -80,10 +80,10 @@ export default function App() {
         </div>
         <div className={activeTab === 'sparkles' ? 'block' : 'hidden'}>
           <div className="flex flex-col items-center justify-center pt-20">
-            <div className="w-20 h-20 bg-sky-50 rounded-3xl flex items-center justify-center mb-6 border-b-4 border-sky-100 rotate-3">
-              <div className="w-10 h-10 bg-sky-500 rounded-xl" />
+            <div className="w-20 h-20 bg-red-50 rounded-3xl flex items-center justify-center mb-6 border-b-4 border-red-100 rotate-3">
+              <div className="w-10 h-10 bg-red-500 rounded-xl" />
             </div>
-            <h2 className="text-3xl font-black text-sky-500 uppercase tracking-tighter">Predictor Pro</h2>
+            <h2 className="text-3xl font-black text-red-500 uppercase tracking-tighter">Predictor Pro</h2>
             <p className="text-gray-400 mt-2 font-medium">Advanced AI features coming soon.</p>
           </div>
         </div>
@@ -110,7 +110,7 @@ export default function App() {
                   placeholder="example.com"
                   value={portalUrl}
                   onChange={(e) => setPortalUrl(e.target.value)}
-                  className="w-full p-4 bg-gray-50 border-0 rounded-2xl text-sm focus:ring-2 focus:ring-sky-500"
+                  className="w-full p-4 bg-gray-50 border-0 rounded-2xl text-sm focus:ring-2 focus:ring-red-500"
                 />
                 <button 
                   onClick={handleLoadPortal}
@@ -130,9 +130,9 @@ export default function App() {
                 animate={{ 
                   scale: [1, 1.05, 1],
                   boxShadow: [
-                    "0 0 0px rgba(14, 165, 233, 0.2)",
-                    "0 0 20px rgba(14, 165, 233, 0.4)",
-                    "0 0 0px rgba(14, 165, 233, 0.2)"
+                    "0 0 0px rgba(239, 68, 68, 0.2)",
+                    "0 0 20px rgba(239, 68, 68, 0.4)",
+                    "0 0 0px rgba(239, 68, 68, 0.2)"
                   ]
                 }}
                 transition={{ 
@@ -140,13 +140,13 @@ export default function App() {
                   repeat: Infinity, 
                   ease: "easeInOut" 
                 }}
-                className="w-24 h-24 bg-sky-500 rounded-full mb-4 flex items-center justify-center text-white overflow-hidden cursor-pointer shadow-lg relative border-4 border-white"
+                className="w-24 h-24 bg-red-500 rounded-full mb-4 flex items-center justify-center text-white overflow-hidden cursor-pointer shadow-lg relative border-4 border-white"
                 onClick={() => fileInputRef.current?.click()}
               >
                 {profileImage ? (
                   <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
                 ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-sky-400 to-sky-600 flex items-center justify-center">
+                  <div className="w-full h-full bg-gradient-to-br from-red-400 to-red-600 flex items-center justify-center">
                     <User className="w-12 h-12 text-white fill-white/20" />
                   </div>
                 )}
@@ -167,7 +167,7 @@ export default function App() {
                 { label: 'History', icon: Clock },
                 { label: 'Premium', icon: Crown },
               ].map((item, i) => (
-                <button key={i} className="bg-white p-4 rounded-2xl border border-gray-100 flex flex-col items-center gap-2 hover:border-sky-200 transition-colors">
+                <button key={i} className="bg-white p-4 rounded-2xl border border-gray-100 flex flex-col items-center gap-2 hover:border-red-200 transition-colors">
                   <div className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center">
                      <item.icon className="w-5 h-5 text-gray-500" />
                   </div>
@@ -179,7 +179,7 @@ export default function App() {
             <div className="bg-white p-6 rounded-[32px] shadow-sm border border-gray-100">
               <h3 className="text-lg font-black text-gray-900 mb-4 tracking-tight">Send Feedback</h3>
               <textarea 
-                className="w-full bg-gray-50 border-0 rounded-2xl p-4 text-sm focus:ring-2 focus:ring-sky-500 min-h-[120px] font-black uppercase"
+                className="w-full bg-gray-50 border-0 rounded-2xl p-4 text-sm focus:ring-2 focus:ring-red-500 min-h-[120px] font-black uppercase"
                 placeholder="LET US KNOW WHAT YOU THINK..."
               />
               <button className="w-full mt-4 bg-gray-900 text-white rounded-2xl p-4 text-sm font-black hover:bg-gray-800 transition-all uppercase">

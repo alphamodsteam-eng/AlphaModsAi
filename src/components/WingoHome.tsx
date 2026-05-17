@@ -1,7 +1,7 @@
 import { LotteryResult, PredictionRecord } from '../hooks/useWingoData';
 import { motion } from 'motion/react';
-import ImageSlider from './ImageSlider';
-import StatsDashboard from './StatsDashboard';
+import { useState, useEffect } from 'react';
+import { HelpCircle, ChevronRight, History } from 'lucide-react';
 
 interface WingoHomeProps {
   currentPeriod: string;
@@ -14,224 +14,199 @@ interface WingoHomeProps {
 }
 
 export default function WingoHome({ currentPeriod, nextPrediction, nextConfidence, allResults, predictionsHistory, isLoading, error }: WingoHomeProps) {
-  const latestTen = allResults.slice(0, 10);
-  
-  // Calculate Big/Small distribution
-  const bigCount = latestTen.filter(r => parseInt(r.number) >= 5).length;
-  const smallCount = latestTen.length - bigCount;
-  const bigPercent = latestTen.length > 0 ? (bigCount / latestTen.length) * 100 : 50;
+  const [timeLeft, setTimeLeft] = useState(60);
 
-  const confidenceScore = nextConfidence;
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const now = new Date();
+      const seconds = now.getSeconds();
+      setTimeLeft(60 - seconds);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const latestFive = allResults.slice(0, 5);
+  const latestTenPredictions = predictionsHistory.slice(0, 10);
+
+  const getBallColor = (num: number) => {
+    if (num === 0) return 'linear-gradient(135deg, #9c56f6 50%, #fb4e4e 50%)';
+    if (num === 5) return 'linear-gradient(135deg, #9c56f6 50%, #2bb361 50%)';
+    if ([1, 3, 7, 9].includes(num)) return '#2bb361';
+    if ([2, 4, 6, 8].includes(num)) return '#fb4e4e';
+    return '#ccc';
+  };
+
+  const balls = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+  const multipliers = ['X1', 'X5', 'X10', 'X20', 'X50', 'X100'];
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pt-4">
+    <div className="space-y-3 pb-24 pt-1 px-3 select-none min-h-screen max-w-xl mx-auto overflow-x-hidden">
       
-      <ImageSlider />
+      {/* Top Ticket Card - Pure Red & Perfectly Balanced */}
+      <div className="relative bg-[#ff2a2a] h-[110px] rounded-[15px] shadow-lg flex overflow-hidden">
+        {/* Half-notches perfectly aligned with the dashed line at 50% */}
+        <div className="absolute -top-3 left-[50%] -translate-x-1/2 w-6 h-6 bg-[#f2f2f2] rounded-full z-20" />
+        <div className="absolute -bottom-3 left-[50%] -translate-x-1/2 w-6 h-6 bg-[#f2f2f2] rounded-full z-20" />
 
-      {error && (
-        <div className="bg-red-50 border border-red-100 p-4 rounded-2xl flex items-center gap-3 animate-in fade-in zoom-in duration-300">
-          <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center shrink-0">
-            <span className="text-red-600 font-bold">!</span>
+        {/* Left Side - 50% Width */}
+        <div className="w-1/2 p-2 pl-4 flex flex-col justify-between text-white border-r-[1.5px] border-dashed border-white/40 relative">
+          <div className="border border-white/50 rounded-full px-3 py-0.5 flex items-center justify-center gap-1.5 w-fit">
+             <div className="bg-white rounded-sm p-0.5">
+                <HelpCircle className="w-2.5 h-2.5 text-[#ff2a2a] fill-current" />
+             </div>
+             <span className="text-[11px] font-bold leading-none">How to play</span>
           </div>
-          <div className="flex flex-col">
-            <span className="text-red-800 text-xs font-black uppercase tracking-wider">Network Error</span>
-            <span className="text-red-600 text-[10px] font-black uppercase leading-tight">{error}</span>
+          
+          <div className="flex flex-col gap-1 mb-0.5">
+            <span className="text-[13px] font-bold tracking-tight">WinGo 1 Min</span>
+            <div className="flex gap-1 overflow-x-auto scrollbar-none">
+              {latestFive.map((res, i) => (
+                <div 
+                  key={i} 
+                  className="w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-black shadow-lg relative overflow-hidden shrink-0"
+                  style={{ background: getBallColor(parseInt(res.number)) }}
+                >
+                  <div className="absolute top-0.5 left-1 w-1 h-1 bg-white/40 rounded-full blur-[0.5px]" />
+                  <span className="relative z-10">{res.number}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-      )}
 
-      {/* Results Box - Redesigned */}
-      <div className="relative overflow-hidden bg-white/90 backdrop-blur-xl border border-white/60 rounded-[32px] p-6 shadow-[0_8px_40px_rgb(0,0,0,0.04)] ring-1 ring-gray-900/5">
-        <div className="absolute inset-0 bg-gradient-to-br from-sky-50 to-white/50" />
-        <div className="relative z-10 flex justify-between items-center mb-6">
-          <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400">Last 10 Results</h3>
-          <div className="px-3 py-1 bg-sky-50 border border-sky-100/50 rounded-full flex items-center gap-1.5 pl-2">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-500"></span>
+        {/* Right Side - 50% Width */}
+        <div className="w-1/2 pt-2.5 pb-2.5 pr-4 flex flex-col items-end justify-between overflow-hidden">
+          <div className="flex flex-col items-end gap-1 w-full">
+            <span className="text-[12px] font-bold text-white tracking-wide whitespace-nowrap">Time remaining</span>
+            <div className="flex gap-[2.5px] items-center">
+              {/* Slanted First Digit Box */}
+              <div className="bg-white text-gray-800 w-[18px] h-[32px] flex items-center justify-center font-black text-lg shadow-sm" style={{ clipPath: 'polygon(15% 0%, 100% 0%, 100% 100%, 0% 100%)', borderRadius: '1.5px 3px 3px 1.5px' }}>0</div>
+              <div className="bg-white text-gray-800 w-[18px] h-[32px] flex items-center justify-center font-black text-lg shadow-sm rounded-[1.5px]">0</div>
+              <div className="text-white font-black text-lg px-0.5">:</div>
+              <div className="bg-white text-gray-800 w-[18px] h-[32px] flex items-center justify-center font-black text-lg shadow-sm rounded-[1.5px]">
+                {Math.floor(timeLeft / 10)}
+              </div>
+              {/* Slanted Last Digit Box */}
+              <div className="bg-white text-gray-800 w-[18px] h-[32px] flex items-center justify-center font-black text-lg shadow-sm" style={{ clipPath: 'polygon(0% 0%, 85% 0%, 100% 100%, 0% 100%)', borderRadius: '3px 1.5px 1.5px 3px' }}>
+                {timeLeft % 10}
+              </div>
+            </div>
+          </div>
+          
+          <div className="w-full text-right">
+            <span className="text-[14px] font-bold text-white tracking-tighter block leading-none truncate whitespace-nowrap">
+              {currentPeriod}
             </span>
-            <span className="text-[8px] font-black text-sky-600 uppercase tracking-[0.2em]">Live</span>
           </div>
         </div>
+      </div>
+
+      {/* Control Panel - Compact Card */}
+      <div className="bg-white rounded-[15px] p-3 shadow-[0_4px_25px_rgba(0,0,0,0.05)] border border-gray-50 space-y-4">
         
-        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-none relative z-10">
-          {isLoading && latestTen.length === 0 ? (
-            [...Array(10)].map((_, i) => (
-              <div key={i} className="min-w-[60px] aspect-[3/4] bg-gray-50 rounded-2xl animate-pulse" />
-            ))
-          ) : (
-            latestTen.map((result, idx) => {
-              const num = parseInt(result.number);
-              let colorBase = '';
-              if (num === 0) {
-                colorBase = 'shadow-red-200';
-              } else if (num === 5) {
-                colorBase = 'shadow-emerald-200';
-              } else {
-                const colors = result.color.split(',');
-                colorBase = colors.includes('red') ? 'bg-red-500 shadow-red-200' : 
-                               colors.includes('green') ? 'bg-emerald-500 shadow-emerald-200' : 
-                               colors.includes('violet') ? 'bg-violet-500 shadow-violet-200' : 'bg-gray-400';
-              }
-              
-              const pred = num >= 5 ? 'Big' : 'Small';
-
-              return (
-                <motion.div
-                  key={`${result.issueNumber}-${idx}`}
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ delay: idx * 0.05 }}
-                  className="flex flex-col items-center gap-1.5 min-w-[60px]"
-                >
-                  <div className={`w-full aspect-[4/5] rounded-[24px] ${colorBase} flex flex-col items-center justify-center text-white shadow-sm border-[3px] border-dashed border-white/30 relative overflow-hidden`} style={num === 0 ? { background: 'linear-gradient(90deg, #ef4444 50%, #8b5cf6 50%)' } : num === 5 ? { background: 'linear-gradient(90deg, #10b981 50%, #8b5cf6 50%)' } : {}}>
-                    <span className="font-black text-lg">{result.number}</span>
-                    <span className="text-[7px] font-bold uppercase tracking-tighter opacity-80">{pred}</span>
-                  </div>
-                  <span className="text-[7px] font-bold text-gray-400 uppercase tracking-widest">
-                    #{result.issueNumber.slice(-2)}
-                  </span>
-                </motion.div>
-              );
-            })
-          )}
+        {/* Color Buttons Row */}
+        <div className="flex gap-2.5">
+          <button className="flex-1 bg-[#2bb361] text-white h-10 rounded-t-[10px] rounded-b-[4px] font-black text-[14px] shadow-sm active:scale-95 transition-transform uppercase">Green</button>
+          <button className="flex-1 bg-[#9c56f6] text-white h-10 rounded-[6px] font-black text-[14px] shadow-sm active:scale-95 transition-transform uppercase">Violet</button>
+          <button className="flex-1 bg-[#fb4e4e] text-white h-10 rounded-t-[10px] rounded-b-[4px] font-black text-[14px] shadow-sm active:scale-95 transition-transform uppercase">Red</button>
         </div>
-      </div>
 
-      {/* Premium Header Card */}
-      <div className="relative group perspective-1000">
-        <div className="absolute inset-0 bg-gradient-to-br from-sky-400 to-blue-600 rounded-[32px] blur-xl opacity-20 group-hover:opacity-30 transition-opacity duration-700" />
-        <div className="relative bg-white/90 backdrop-blur-xl border border-white/60 rounded-[32px] p-5 shadow-[0_8px_40px_rgb(0,0,0,0.04)] ring-1 ring-gray-900/5 transition-all duration-500 overflow-hidden transform-gpu group-hover:-translate-y-1">
-          {/* Subtle top glare */}
-          <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white to-transparent opacity-90" />
-          
-          <div className="flex justify-between items-center mb-4 relative z-10">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-sky-50 border border-sky-100 flex items-center justify-center shadow-inner relative">
-                <div className="absolute inset-0 rounded-full border border-sky-200/50 animate-ping opacity-20" />
-                <div className="w-3 h-3 rounded-full bg-gradient-to-br from-sky-400 to-blue-500 shadow-[0_0_10px_rgba(56,189,248,0.5)]" />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[9px] font-black tracking-[0.2em] text-gray-400 uppercase mb-0.5">Wingo 1 Min</span>
-                <div className="text-sm font-black tracking-tight text-gray-900 font-mono uppercase">
-                  {currentPeriod}
+        {/* Number Grid Card - Gray Background */}
+        <div className="bg-[#f3f3f3] p-3 rounded-[12px]">
+          <div className="grid grid-cols-5 gap-y-4 gap-x-2">
+            {balls.map((n) => (
+              <div key={n} className="flex justify-center">
+                <div 
+                  className="w-12 h-12 rounded-full relative flex items-center justify-center text-white text-[24px] font-black shadow-[0_3px_10px_rgba(0,0,0,0.12)] border-[2px] border-white/20"
+                  style={{ background: getBallColor(n) }}
+                >
+                  <span className="relative z-10">{n}</span>
+                  {/* The white accents from the photo */}
+                  <div className="absolute top-1 left-2 w-3 h-3 bg-white/20 rounded-full blur-[0.5px]" />
+                  <div className="absolute bottom-1 right-2 w-2 h-2 bg-white/10 rounded-full" />
                 </div>
               </div>
-            </div>
-            
-            <motion.div 
-              animate={{ opacity: [1, 0.5, 1] }} 
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-              className="px-3 py-1 bg-sky-400 rounded-full flex items-center justify-center shadow-sm border border-sky-300"
+            ))}
+          </div>
+        </div>
+
+        {/* Multipliers Bar */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+          <button className="px-4 h-8 min-w-fit rounded-[4px] border border-[#fb4e4e]/40 text-[#fb4e4e] font-bold text-[12px] bg-white active:scale-95 transition-transform">Random</button>
+          {multipliers.map((m) => (
+            <button 
+              key={m} 
+              className={`h-8 min-w-[48px] rounded-[4px] font-bold text-[12px] border flex items-center justify-center active:scale-95 transition-transform ${m === 'X1' ? 'bg-[#2bb361] text-white border-[#2bb361]' : 'bg-[#f7f7f7] text-[#999] border-gray-100'}`}
             >
-              <span className="text-[8px] font-black uppercase tracking-[0.2em] text-white whitespace-nowrap">AI SERVER</span>
-            </motion.div>
+              {m}
+            </button>
+          ))}
+        </div>
+
+        {/* Big/Small Toggle Pair */}
+        <div className="flex rounded-[25px] overflow-hidden shadow-[0_4px_12px_rgba(0,0,0,0.08)]">
+          <div className={`flex-1 h-12 flex items-center justify-center font-black text-white text-lg uppercase transition-all duration-300 ${nextPrediction === 'Big' ? 'bg-[#fca321]' : 'bg-[#fca321] grayscale-[0.5] opacity-90'}`}>
+            Big
           </div>
-          
-          <div className="h-px w-full bg-gradient-to-r from-transparent via-gray-200 to-transparent mb-4 opacity-60" />
-
-          <div className="flex items-center justify-between relative z-10 px-1">
-            <div className="flex flex-col items-start space-y-2.5">
-              <h3 className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Confidence</h3>
-              <div className="relative flex items-center justify-center bg-white rounded-[20px] shadow-[inset_0_2px_10px_rgba(0,0,0,0.02)] border border-gray-100 p-2.5">
-                <svg className="transform -rotate-90 w-14 h-14 drop-shadow-sm">
-                  <circle
-                    className="text-gray-100"
-                    strokeWidth="5"
-                    stroke="currentColor"
-                    fill="transparent"
-                    r="24"
-                    cx="28"
-                    cy="28"
-                  />
-                  <circle
-                    className="text-emerald-500 transition-all duration-1000 ease-out drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]"
-                    strokeWidth="5"
-                    strokeDasharray={150.72}
-                    strokeDashoffset={150.72 - (confidenceScore / 100) * 150.72}
-                    strokeLinecap="round"
-                    stroke="currentColor"
-                    fill="transparent"
-                    r="24"
-                    cx="28"
-                    cy="28"
-                  />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center flex-col">
-                  <span className="text-sm font-black text-gray-800 tracking-tighter">
-                    {confidenceScore}%
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex flex-col items-end space-y-2.5">
-              <h3 className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] mr-2">Prediction</h3>
-              <motion.div 
-                key={nextPrediction}
-                initial={{ opacity: 0, scale: 0.8, filter: 'blur(10px)', rotate: -5 }}
-                animate={{ opacity: 1, scale: 1, filter: 'blur(0px)', rotate: 0 }}
-                transition={{ 
-                  type: "spring", 
-                  stiffness: 400, 
-                  damping: 15 
-                }}
-                className="flex items-center"
-              >
-                <motion.div 
-                  className={`relative px-7 py-4 rounded-[22px] border shadow-[0_8px_30px_rgb(0,0,0,0.06)] flex flex-col items-center justify-center min-w-[130px] overflow-hidden group/pred ${nextPrediction === 'Big' ? 'bg-gradient-to-b from-white to-sky-50 border-sky-200' : nextPrediction === 'Small' ? 'bg-gradient-to-b from-white to-blue-50 border-blue-200' : 'bg-gradient-to-b from-white to-gray-50 border-gray-200'}`}
-                  animate={{ 
-                    y: [0, -3, 0],
-                    boxShadow: [
-                      "0 8px 30px rgba(0,0,0,0.06)",
-                      nextPrediction === 'Big' ? "0 15px 40px rgba(56,189,248,0.2)" : nextPrediction === 'Small' ? "0 15px 40px rgba(37,99,235,0.2)" : "0 15px 40px rgba(0,0,0,0.12)",
-                      "0 8px 30px rgba(0,0,0,0.06)"
-                    ]
-                  }}
-                  transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
-                >
-                  {/* Glossy inner top highlight */}
-                  <div className="absolute top-0 inset-x-0 h-[2px] bg-white opacity-80" />
-                  
-                  {/* Spinning Aura */}
-                  <motion.div 
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
-                    className="absolute -inset-[100%] opacity-[0.15]"
-                    style={{
-                      background: nextPrediction === 'Big' 
-                        ? 'conic-gradient(from 0deg, transparent, rgba(56, 189, 248, 1), transparent)' 
-                        : nextPrediction === 'Small'
-                        ? 'conic-gradient(from 0deg, transparent, rgba(37, 99, 235, 1), transparent)'
-                        : 'conic-gradient(from 0deg, transparent, rgba(156, 163, 175, 1), transparent)'
-                    }}
-                  />
-                  
-                  <motion.span 
-                    animate={{ scale: [1, 1.05, 1], rotate: [0, -1, 1, 0] }}
-                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                    className={`relative z-10 text-[42px] leading-none font-black uppercase tracking-tighter drop-shadow-md ${nextPrediction === 'Big' ? 'text-sky-500' : nextPrediction === 'Small' ? 'text-blue-600' : 'text-gray-900'}`}
-                  >
-                    {nextPrediction}
-                  </motion.span>
-                </motion.div>
-              </motion.div>
-            </div>
+          <div className={`flex-1 h-12 flex items-center justify-center font-black text-white text-lg uppercase transition-all duration-300 ${nextPrediction === 'Small' ? 'bg-[#4c8af7]' : 'bg-[#4c8af7] grayscale-[0.5] opacity-90'}`}>
+            Small
           </div>
         </div>
       </div>
-      
-      <StatsDashboard history={predictionsHistory} allResults={allResults} />
 
-      {/* Footer Branding */}
-      <div className="flex flex-col items-center gap-2 py-4 opacity-20 group">
-        <div className="flex gap-1">
-          <div className="w-1 h-1 bg-gray-400 rounded-full group-hover:bg-sky-500 transition-colors" />
-          <div className="w-1 h-1 bg-gray-400 rounded-full group-hover:bg-sky-500 transition-colors delay-100" />
-          <div className="w-1 h-1 bg-gray-400 rounded-full group-hover:bg-sky-500 transition-colors delay-200" />
-        </div>
-        <span className="text-[12px] font-black uppercase tracking-[0.5em] text-gray-400">Advanced Engine v2.0</span>
+      {/* Results History Table - 999% Match to Photo */}
+      <div className="bg-white rounded-[12px] overflow-hidden shadow-sm border border-gray-100 mt-4 mx-1">
+        <table className="w-full text-center border-collapse">
+          <thead>
+            <tr className="bg-[#ff2a2a] text-white text-[11px] font-bold">
+              <th className="py-2.5 font-medium">Period</th>
+              <th className="py-2.5 font-medium">Number</th>
+              <th className="py-2.5 font-medium">Big Small</th>
+              <th className="py-2.5 font-medium">Color</th>
+            </tr>
+          </thead>
+          <tbody>
+            {allResults.slice(0, 10).map((res, i) => {
+              const num = parseInt(res.number);
+              const isBig = num >= 5;
+              const colors = res.color.split(',');
+              
+              // Determine number text color
+              let numColor = '#2bb361'; // green
+              if (num === 0) numColor = '#9c56f6'; // violet/red mix, use violet for text
+              else if (num === 5) numColor = '#9c56f6'; // violet/green mix, use violet for text
+              else if ([2, 4, 6, 8].includes(num)) numColor = '#fb4e4e'; // red
+              
+              return (
+                <tr key={i} className="border-b border-gray-50 text-[10.5px] h-10">
+                  <td className="text-gray-500 font-bold py-1 px-1">{res.issueNumber}</td>
+                  <td className="text-[16px] font-black py-1" style={{ color: numColor }}>
+                    {res.number}
+                  </td>
+                  <td className="text-gray-500 font-bold py-1">
+                    {isBig ? 'Big' : 'Small'}
+                  </td>
+                  <td className="py-1">
+                    <div className="flex items-center justify-center gap-1">
+                      {colors.map((c, ci) => (
+                        <div 
+                          key={ci} 
+                          className="w-2.5 h-2.5 rounded-full shadow-sm"
+                          style={{ 
+                            backgroundColor: c === 'green' ? '#2bb361' : c === 'red' ? '#fb4e4e' : '#9c56f6' 
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
     </div>
   );
 }
+
+

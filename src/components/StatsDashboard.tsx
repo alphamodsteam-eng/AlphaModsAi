@@ -128,7 +128,7 @@ export default function StatsDashboard({ history, allResults }: StatsDashboardPr
        {/* New Charts */}
        <div className="mt-8 flex flex-col gap-8">
         <div className="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm">
-           <div className="flex items-center gap-2 mb-4 text-sky-600">
+           <div className="flex items-center gap-2 mb-4 text-red-600">
               <BarChart3 className="w-4 h-4" />
               <span className="text-[10px] font-black uppercase tracking-wider">Number Frequency</span>
            </div>
@@ -137,7 +137,7 @@ export default function StatsDashboard({ history, allResults }: StatsDashboardPr
                <BarChart data={frequencyData}>
                  <XAxis dataKey="number" hide />
                  <Tooltip cursor={{fill: '#f3f4f6'}} contentStyle={{borderRadius: '12px'}} />
-                 <Bar dataKey="frequency" fill="#38bdf8" radius={[8, 8, 0, 0]} />
+                 <Bar dataKey="frequency" fill="#ef4444" radius={[8, 8, 0, 0]} />
                </BarChart>
              </ResponsiveContainer>
            </div>

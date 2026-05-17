@@ -17,111 +17,171 @@ export default function WingoHistory({ history, clearHistory, profileName, profi
 
   return (
     <div className="space-y-6 pb-20">
-      {/* Stats Dashboard - Decreased sizes */}
-      <div className="grid grid-cols-2 gap-2">
-        <div className="bg-white/50 p-3 rounded-[20px] border-2 border-dashed border-emerald-200 flex justify-between items-center">
-          <span className="text-emerald-500 font-black text-[12px]">Pass</span>
-          <span className="text-emerald-500 font-black text-2xl">{wins}</span>
-        </div>
-        <div className="bg-white/50 p-3 rounded-[20px] border-2 border-dashed border-rose-200 flex justify-between items-center">
-          <span className="text-rose-500 font-black text-[12px]">Fail</span>
-          <span className="text-rose-500 font-black text-2xl">{losses}</span>
-        </div>
-        <div className="col-span-2 bg-white/50 p-4 rounded-[20px] border-2 border-dashed border-gray-200 flex justify-between items-center">
-          <span className="text-gray-500 font-black text-[14px]">Accuracy</span>
-          <span className="text-gray-400 font-black text-3xl">{accuracy}%</span>
-        </div>
-        <div className="col-span-2 bg-white/50 p-4 rounded-[20px] border-2 border-dashed border-purple-200 flex justify-between items-center">
-          <span className="text-purple-500 font-black text-[14px]">Bets</span>
-          <span className="text-purple-500 font-black text-3xl">{totalBets}</span>
-        </div>
+      {/* Stats Dashboard - Advanced Premium UI */}
+      <div className="grid grid-cols-2 gap-3 px-1">
+        <motion.div 
+          initial={{ opacity: 0, x: -10 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="bg-white/80 backdrop-blur-md p-4 rounded-[24px] border border-emerald-100 shadow-[0_8px_20px_rgba(16,185,129,0.05)] relative overflow-hidden"
+        >
+          <div className="absolute -top-4 -right-4 w-12 h-12 bg-emerald-50 rounded-full blur-xl" />
+          <div className="flex flex-col gap-1 relative z-10">
+            <span className="text-emerald-500 font-bold text-[10px] uppercase tracking-[0.2em]">Wins</span>
+            <span className="text-gray-900 font-black text-3xl">{wins}</span>
+          </div>
+        </motion.div>
+
+        <motion.div 
+          initial={{ opacity: 0, x: 10 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="bg-white/80 backdrop-blur-md p-4 rounded-[24px] border border-rose-100 shadow-[0_8px_20px_rgba(244,63,94,0.05)] relative overflow-hidden"
+        >
+          <div className="absolute -top-4 -right-4 w-12 h-12 bg-rose-50 rounded-full blur-xl" />
+          <div className="flex flex-col gap-1 relative z-10">
+            <span className="text-rose-500 font-bold text-[10px] uppercase tracking-[0.2em]">Losses</span>
+            <span className="text-gray-900 font-black text-3xl">{losses}</span>
+          </div>
+        </motion.div>
+
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="col-span-2 bg-gradient-to-br from-gray-900 to-gray-800 p-5 rounded-[28px] shadow-xl relative overflow-hidden"
+        >
+          {/* Decorative background elements */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/10 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full blur-2xl" />
+          
+          <div className="flex justify-between items-center relative z-10">
+            <div className="space-y-0.5">
+              <span className="text-gray-400 font-bold text-[11px] uppercase tracking-[0.25em]">Win Accuracy</span>
+              <div className="flex items-baseline gap-2">
+                <span className="text-white font-black text-4xl">{accuracy}%</span>
+                <span className="text-emerald-400 text-[10px] font-bold uppercase">Target: 90%+</span>
+              </div>
+            </div>
+            <div className="w-16 h-16 rounded-2xl bg-white/10 flex items-center justify-center border border-white/10 backdrop-blur-sm">
+               <div className="flex flex-col items-center">
+                 <span className="text-white font-black text-xl">{totalBets}</span>
+                 <span className="text-white/40 text-[8px] font-bold uppercase">Total</span>
+               </div>
+            </div>
+          </div>
+        </motion.div>
       </div>
 
-      {/* Header - No box styling */}
-      <div className="flex justify-between items-center px-1">
-        <h2 className="text-[12px] font-black uppercase tracking-widest text-gray-400">PREDICTION HISTORY</h2>
+      {/* Header - Modern Label */}
+      <div className="flex justify-between items-center px-2 mt-8">
+        <div className="flex items-center gap-3">
+          <div className="w-1 h-4 bg-red-500 rounded-full" />
+          <h2 className="text-[13px] font-black uppercase tracking-tight text-gray-900">Advanced Log</h2>
+        </div>
         <button 
           onClick={clearHistory}
-          className="text-rose-500 hover:text-rose-600 transition-colors"
+          className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 hover:bg-rose-50 hover:text-rose-500 transition-all active:scale-90"
         >
-          <X className="w-5 h-5" />
+          <X className="w-4 h-4" />
         </button>
       </div>
 
-      <AnimatePresence>
-        {history.map((p, idx) => {
-          const isWin = p.status === 'Win';
-          const isLoss = p.status === 'Loss';
-          const cardBorder = isWin ? 'border-green-500' : isLoss ? 'border-red-500' : 'border-sky-500';
-
-          return (
-            <motion.div
-              key={`${p.period}-${idx}`}
-              initial={{ opacity: 0, y: 20, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              whileHover={{ scale: 1.02, y: -4, boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)" }}
-              whileTap={{ scale: 0.98 }}
-              transition={{ type: "spring", stiffness: 300, damping: 20 }}
-              className={`bg-white rounded-[24px] shadow-[0_4px_20px_rgba(0,0,0,0.03)] border-2 ${cardBorder} relative overflow-hidden`}
+      <div className="space-y-4 px-1">
+        <AnimatePresence mode="popLayout">
+          {history.length === 0 ? (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="py-20 text-center space-y-3"
             >
-              <div className={`py-1 text-center text-[8px] font-black uppercase tracking-widest text-white border-b border-white ${isWin ? 'bg-green-600' : isLoss ? 'bg-red-600' : 'bg-sky-500'}`}>
-                {isWin && <CheckCircle className="w-3 h-3 inline mr-1" />}
-                {isLoss && <XCircle className="w-3 h-3 inline mr-1" />}
-                {!isWin && !isLoss && <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 2, ease: "linear" }} className="inline"><Loader2 className="w-3 h-3 inline mr-1" /></motion.div>}
-                {p.status}
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Loader2 className="w-8 h-8 text-gray-300" />
               </div>
-               
-              <div className="pl-5 pr-5 pt-3">
-                {/* Top Row: Period and Time */}
-                <div className="flex justify-between items-center mb-4">
-                  <span className="font-mono font-black text-sm text-gray-800 uppercase tracking-tighter">#{p.period}</span>
-                  <span className={`${isWin ? 'bg-green-100 text-green-600' : isLoss ? 'bg-red-100 text-red-600' : 'bg-sky-100 text-sky-600'} text-[10px] font-black px-2 py-0.5 rounded-md uppercase`}>WINGO 1 MIN</span>
-                </div>
-
-                {/* Prediction/Actual Box */}
-                <div className="grid grid-cols-2 gap-3 mb-4">
-                  <div className="bg-white rounded-xl p-3 border border-gray-100">
-                    <p className="text-[8px] font-black uppercase text-gray-400 mb-0.5 tracking-wider">Predicted</p>
-                    <div className="flex items-baseline gap-2">
-                      <span className="font-black text-sm uppercase tracking-tighter text-gray-900">{p.prediction}</span>
-                    </div>
-                  </div>
-                  <div className={`bg-white rounded-xl p-3 border ${isWin ? 'border-green-100' : isLoss ? 'border-red-100' : 'border-sky-100'}`}>
-                    <p className="text-[8px] font-black uppercase text-gray-400 mb-0.5 tracking-wider">ACTUAL</p>
-                    <div className="flex items-baseline gap-2">
-                       <span className={`font-black text-sm uppercase tracking-tighter ${isWin ? 'text-green-700' : isLoss ? 'text-red-700' : 'text-sky-700'}`}>
-                         {p.actual || '---'}
-                       </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Footer */}
-                <div className={`flex justify-between items-center text-[10px] font-black uppercase tracking-widest border-t ${isWin ? 'border-green-100 text-green-600' : isLoss ? 'border-red-100 text-red-600' : 'border-sky-100 text-sky-600'} pt-3`}>
-                  <div className="flex items-center gap-2">
-                    <span>LAXI PREDICTOR</span>
-                    <span>•</span>
-                    <span>ENGINE V1</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <div className={`w-1.5 h-1.5 rounded-full ${isWin ? 'bg-green-500' : isLoss ? 'bg-red-500' : 'bg-sky-500'}`} />
-                    {p.confidence}% CONF
-                  </div>
-                </div>
-              </div>
-              
-              {/* Status Stamp */}
-               <div className="absolute right-5 top-12 hidden">
-                 <div className={`flex flex-col items-center gap-1 ${isWin ? 'text-green-500' : isLoss ? 'text-red-500' : 'text-gray-400'}`}>
-                   <div className="w-8 h-8 rounded-full bg-current flex items-center justify-center text-white">{isWin ? '✓' : isLoss ? '✕' : '—'}</div>
-                   <span className="text-[8px] font-black uppercase">{p.status}</span>
-                 </div>
-               </div>
+              <p className="text-gray-400 font-black text-xs uppercase">No predictions yet</p>
             </motion.div>
-          );
-        })}
-      </AnimatePresence>
+          ) : (
+            history.map((p, idx) => {
+              const isWin = p.status === 'Win';
+              const isLoss = p.status === 'Loss';
+              const isPending = p.status === 'Pending';
+
+              return (
+                <motion.div
+                  key={`${p.period}-${idx}`}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ delay: idx * 0.05 }}
+                  className="bg-white rounded-[26px] p-4 shadow-[0_4px_15px_rgba(0,0,0,0.02)] border border-gray-100 relative group"
+                >
+                  {/* Status Indicator Bar */}
+                  <div className={`absolute top-4 right-4 px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest flex items-center gap-1.5 ${
+                    isWin ? 'bg-emerald-50 text-emerald-600' : 
+                    isLoss ? 'bg-rose-50 text-rose-600' : 
+                    'bg-slate-50 text-slate-400 animate-pulse'
+                  }`}>
+                    {isWin && <CheckCircle className="w-3 h-3" />}
+                    {isLoss && <XCircle className="w-3 h-3" />}
+                    {isPending && <Loader2 className="w-3 h-3 animate-spin" />}
+                    {p.status}
+                  </div>
+
+                  <div className="space-y-4">
+                    {/* Period Info */}
+                    <div className="flex flex-col">
+                      <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">Period ID</span>
+                      <span className="text-sm font-black text-gray-900 tracking-tight">#{p.period}</span>
+                    </div>
+
+                    {/* Data Grid */}
+                    <div className="flex items-center gap-8">
+                       <div className="flex flex-col gap-1">
+                          <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Alpha Prediction</span>
+                          <span className={`text-[17px] font-black uppercase tracking-tight ${
+                            p.prediction === 'Big' ? 'text-amber-500' : 'text-blue-500'
+                          }`}>
+                            {p.prediction}
+                          </span>
+                       </div>
+
+                       <div className="w-[1px] h-8 bg-gray-100" />
+
+                       <div className="flex flex-col gap-1">
+                          <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Live Result</span>
+                          <span className={`text-[17px] font-black uppercase tracking-tight ${
+                            isPending ? 'text-gray-300 italic' : 
+                            p.actual === 'Big' ? 'text-amber-500' : 'text-blue-500'
+                          }`}>
+                            {p.actual || 'Processing...'}
+                          </span>
+                       </div>
+                    </div>
+
+                    {/* Meta Footer */}
+                    <div className="flex justify-between items-center pt-3 border-t border-gray-50">
+                      <div className="flex items-center gap-2">
+                        <span className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center border border-gray-100">
+                          <User className="w-4 h-4 text-gray-400" />
+                        </span>
+                        <div className="flex flex-col">
+                          <span className="text-[10px] font-black text-gray-900 leading-none">ANALYZER V.4</span>
+                          <span className="text-[8px] font-bold text-gray-300 uppercase">Engine Core Alpha</span>
+                        </div>
+                      </div>
+                      
+                      <div className="flex flex-col items-end">
+                         <div className="flex items-center gap-1">
+                           <div className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]" />
+                           <span className="text-[10px] font-black text-gray-900">{p.confidence}%</span>
+                         </div>
+                         <span className="text-[8px] font-bold text-gray-300 uppercase">Certainty Rate</span>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   );
 }

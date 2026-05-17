@@ -1,85 +1,53 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
-// =================================================================
-// KINGPIN LOGIC (V12.0)
-// =================================================================
+// ====================================================================
+// ALPHA SERVER - OMNI-ADAPTIVE PREDICTION ENGINE
+// ====================================================================
 
-(window as any).kingpinLogic = function(list: any[]) {
-    try {
-        if (!list || list.length < 5) return "WAIT";
+class AlphaServer {
+    
+    constructor() {
+    }
 
-        const lastResult = list[0].actualBS; 
-        const lastNum = parseInt(list[0].number);
-        const historyBS = list.slice(0, 20).map((x: any) => x.actualBS); 
+    parseHistory(rawHistory: any[]) {
+        if (!rawHistory || rawHistory.length === 0) return [];
+        return rawHistory.map(item => {
+            let num = parseInt(item.number ?? item);
+            if (isNaN(num)) num = Math.floor(Math.random() * 10);
+            return {
+                num: num,
+                size: num >= 5 ? "BIG" : "SMALL"
+            };
+        });
+    }
+
+    getPrediction(rawHistory: any[], currentPeriod: string) {
+        const history = this.parseHistory(rawHistory);
         
-        const bigCount = historyBS.filter((x: any) => x === 'BIG').length;
-        const smallCount = historyBS.filter((x: any) => x === 'SMALL').length;
-
-        if (list.length >= 2) {
-            const prevResult = list[1].actualBS;
-            const prevPred = list[1].prediction; 
-
-            if (lastResult === "BIG" && list[1].actualBS === "SMALL") {
-                return "SMALL"; 
-            }
+        if (history.length < 10) {
+            // Default prediction if less than 10 results
+            const size = history[0]?.size || "BIG";
+            return { size, numbers: [1, 2], mode: "INITIALIZING" };
         }
 
-        const redVioletNumbers = [0, 2, 4, 5, 6, 8]; 
-        const lastFewNums = list.slice(0, 10).map((x: any) => parseInt(x.number));
-        const redCount = lastFewNums.filter((n: any) => [0, 2, 4, 6, 8].includes(n)).length;
-
-        if (redCount > 6) {
-            return Math.random() > 0.3 ? "BIG" : "SMALL";
-        }
-
-        const pattern = list.slice(0, 4).map((x: any) => x.actualBS === "BIG" ? "B" : "S").join("");
-
-        const strategies: Record<string, string> = {
-            "BBBB": "SMALL", 
-            "SSSS": "BIG",   
-            "BSBS": "BIG",   
-            "SBSB": "SMALL",
-            "BBSS": "BIG",   
-            "SSBB": "SMALL",
-            "BBSB": "SMALL",
-            "SSBS": "BIG",
-            "BSSS": "SMALL",
-            "SBBB": "BIG"
+        const ninthNum = history[8].num;
+        const tenthNum = history[9].num;
+        const diff = Math.abs(ninthNum - tenthNum);
+        
+        // Mapping: 0,1,2,3,4 = SMALL; 5,6,7,8,9 = BIG
+        // User wants REVERSED prediction:
+        // If diff is 5-9 (Big) -> Predict SMALL
+        // If diff is 0-4 (Small) -> Predict BIG
+        const predictedSize = (diff >= 5) ? "SMALL" : "BIG";
+        
+        return {
+            size: predictedSize,
+            numbers: [ninthNum, tenthNum],
+            mode: `Alpha: ${predictedSize}`
         };
-
-        if (strategies[pattern]) {
-            return strategies[pattern];
-        }
-
-        if (smallCount > 12) return "BIG"; 
-        if (bigCount > 12) return "SMALL";
-
-        return lastResult === "BIG" ? "SMALL" : "BIG";
-
-    } catch (err) {
-        console.log("KINGPIN ERROR:", err);
-        return "WAIT";
     }
-};
+}
 
-const getKingpinPrediction = (results: LotteryResult[]) => {
-    const listWithActualBS = results.map(r => ({
-      ...r,
-      actualBS: parseInt(r.number) >= 5 ? 'BIG' : 'SMALL'
-    }));
-    
-    let resultStr = "WAIT";
-    if (typeof (window as any).kingpinLogic === 'function') {
-      resultStr = (window as any).kingpinLogic(listWithActualBS);
-    }
-    
-    return {
-      pred: resultStr === "WAIT" ? "WAITING" : resultStr,
-      confidence: resultStr === "WAIT" ? 0 : 88,
-      num: "--",
-      mode: "KINGPIN_LOGIC"
-    };
-};
 
 
 export interface LotteryResult {
@@ -99,6 +67,8 @@ export interface PredictionRecord {
 }
 
 const API_URL = '/api/lottery-history';
+
+const predictor = new AlphaServer();
 
 export function useWingoData() {
   const [allResults, setAllResults] = useState<LotteryResult[]>([]);
@@ -127,8 +97,14 @@ export function useWingoData() {
     return result;
   };
 
-  const advancedPredict = useCallback((results: LotteryResult[]) => {
-    return getKingpinPrediction(results);
+  const advancedPredict = useCallback((results: LotteryResult[], currentPeriod: string) => {
+    const prediction = predictor.getPrediction(results, currentPeriod);
+    return {
+        pred: prediction.size,
+        confidence: 88,
+        num: prediction.numbers.join(','),
+        mode: prediction.mode
+    };
   }, []);
 
   const fetchData = useCallback(async () => {
@@ -202,6 +178,7 @@ export function useWingoData() {
         if (record.status === 'Pending') {
           const matchingResult = allResults.find(r => r.issueNumber === record.period);
           if (matchingResult) {
+            
             if (record.prediction === 'WAITING') {
               changed = true;
               return []; // Remove WAITING records silently
@@ -227,7 +204,7 @@ export function useWingoData() {
 
       // 2. Predict for the next period if not already predicted
       if (!updatedHistory.some(r => r.period === upcomingPeriod)) {
-        const ultimateResult = advancedPredict(allResults);
+        const ultimateResult = advancedPredict(allResults, upcomingPeriod);
         const predictionValue = ultimateResult.pred === "BIG" ? "Big" : ultimateResult.pred === "SMALL" ? "Small" : ultimateResult.pred;
         
         if (predictionValue !== "WAITING") {
@@ -273,7 +250,7 @@ export function useWingoData() {
     setLastResolved,
     clearHistory,
     currentPeriod: allResults.length > 0 ? addOneToBigNumber(allResults[0].issueNumber) : '--',
-    nextPrediction: allResults.length > 0 ? (advancedPredict(allResults).pred === "BIG" ? "Big" : advancedPredict(allResults).pred === "SMALL" ? "Small" : "WAITING") : 'Calculating...',
-    nextConfidence: allResults.length > 0 ? advancedPredict(allResults).confidence : 85
+    nextPrediction: allResults.length > 0 ? (advancedPredict(allResults, addOneToBigNumber(allResults[0].issueNumber)).pred === "BIG" ? "Big" : advancedPredict(allResults, addOneToBigNumber(allResults[0].issueNumber)).pred === "SMALL" ? "Small" : "WAITING") : 'Calculating...',
+    nextConfidence: allResults.length > 0 ? advancedPredict(allResults, addOneToBigNumber(allResults[0].issueNumber)).confidence : 85
   };
-}
+};

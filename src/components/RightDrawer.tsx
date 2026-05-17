@@ -17,7 +17,7 @@ export default function RightDrawer({ isOpen, onClose, history }: RightDrawerPro
 
   const stats = [
     { label: 'WINS', value: wins, icon: Sparkles, color: 'text-amber-500', bg: 'bg-amber-50' },
-    { label: 'LOSSES', value: losses, icon: Zap, color: 'text-blue-500', bg: 'bg-blue-50' },
+    { label: 'LOSSES', value: losses, icon: Zap, color: 'text-red-500', bg: 'bg-red-50' },
     { label: 'ACCURACY', value: `${accuracy}%`, icon: Target, color: 'text-orange-500', bg: 'bg-orange-50' },
     { label: 'TOTAL', value: totalBets, icon: TrendingUp, color: 'text-teal-500', bg: 'bg-teal-50' },
   ];
@@ -67,10 +67,10 @@ export default function RightDrawer({ isOpen, onClose, history }: RightDrawerPro
               </div>
 
               <a 
-                href="https://t.me/+zDMG6OFhIyExYzI9" 
+                href="https://t.me/+sN-HrzSs-oM4ZjQ1" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 w-full p-3 bg-sky-500 text-white rounded-2xl text-sm font-black hover:bg-sky-600 transition-all uppercase"
+                className="flex items-center justify-center gap-2 w-full p-3 bg-red-500 text-white rounded-2xl text-sm font-black hover:bg-red-600 transition-all uppercase"
               >
                 <Send className="w-4 h-4" />
                 JOIN TELEGRAM
@@ -79,7 +79,7 @@ export default function RightDrawer({ isOpen, onClose, history }: RightDrawerPro
               <button 
                 onClick={() => {
                   const latest = history[0];
-                  const text = `LAXI PREDICTOR\nPeriod: ${latest?.period || 'N/A'}\nPrediction: ${latest?.prediction || 'N/A'}\nConfidence: ${latest?.confidence || 0}%\nJoin: https://t.me/+zDMG6OFhIyExYzI9`;
+                  const text = `ALPHA SERVER\nPeriod: ${latest?.period || 'N/A'}\nPrediction: ${latest?.prediction || 'N/A'}\nConfidence: ${latest?.confidence || 0}%\nJoin: https://t.me/+sN-HrzSs-oM4ZjQ1`;
                   navigator.clipboard.writeText(text);
                   alert('Prediction copied to clipboard!');
                 }}

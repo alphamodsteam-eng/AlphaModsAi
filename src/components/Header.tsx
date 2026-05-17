@@ -9,9 +9,9 @@ export default function Header({ onToggleDrawer }: { onToggleDrawer: () => void 
           animate={{ 
             scale: [1, 1.1, 1],
             boxShadow: [
-              "0 0 0px rgba(14, 165, 233, 0.1)",
-              "0 0 15px rgba(14, 165, 233, 0.3)",
-              "0 0 0px rgba(14, 165, 233, 0.1)"
+              "0 0 0px rgba(239, 68, 68, 0.1)",
+              "0 0 15px rgba(239, 68, 68, 0.3)",
+              "0 0 0px rgba(239, 68, 68, 0.1)"
             ]
           }}
           transition={{ 
@@ -19,14 +19,14 @@ export default function Header({ onToggleDrawer }: { onToggleDrawer: () => void 
             repeat: Infinity, 
             ease: "easeInOut" 
           }}
-          className="w-10 h-10 rounded-full bg-sky-100 flex items-center justify-center border border-sky-200"
+          className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center border border-red-200"
         >
-          <User className="w-6 h-6 text-sky-500" />
+          <User className="w-6 h-6 text-red-500" />
         </motion.div>
       </div>
       
       <h1 className="text-gray-900 font-black tracking-tight text-lg uppercase">
-        LAXI <span className="text-sky-500">PREDICTOR</span>
+        ALPHA <span className="text-red-500">SERVER V4</span>
       </h1>
       
       <button onClick={onToggleDrawer} className="p-2 hover:bg-gray-50 rounded-lg transition-colors" id="header-menu-btn">

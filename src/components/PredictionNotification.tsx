@@ -30,7 +30,7 @@ export default function PredictionNotification({ result, history, onClose }: Pre
     if (isWin && result) {
       const duration = 3 * 1000;
       const animationEnd = Date.now() + duration;
-      const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 200 };
+      const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 2000 };
 
       const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
 
@@ -82,7 +82,7 @@ export default function PredictionNotification({ result, history, onClose }: Pre
                     repeat: Infinity,
                     delay: Math.random() * 1
                   }}
-                  className={`absolute w-1 h-1 rounded-full ${i % 2 === 0 ? 'bg-yellow-400' : 'bg-sky-400'}`}
+                  className={`absolute w-1 h-1 rounded-full ${i % 2 === 0 ? 'bg-yellow-400' : 'bg-red-400'}`}
                 />
               ))}
             </motion.div>
@@ -113,12 +113,12 @@ export default function PredictionNotification({ result, history, onClose }: Pre
                   scale: [1, 1.1, 1],
                 }}
                 transition={{ duration: 2, repeat: Infinity }}
-                className="absolute -inset-4 bg-sky-500/10 blur-3xl pointer-events-none -z-10"
+                className="absolute -inset-4 bg-red-500/10 blur-3xl pointer-events-none -z-10"
               />
             )}
 
             {/* Header Section - Premium */}
-            <div className={`relative h-28 flex flex-col items-center justify-center overflow-hidden ${isWin ? 'bg-sky-500' : 'bg-gray-600'}`}>
+            <div className={`relative h-28 flex flex-col items-center justify-center overflow-hidden ${isWin ? 'bg-red-500' : 'bg-gray-600'}`}>
               <motion.div 
                 animate={{ 
                   x: [-200, 600],
@@ -138,7 +138,7 @@ export default function PredictionNotification({ result, history, onClose }: Pre
               {/* Title Badge - Micro */}
               <div className="bg-white/95 backdrop-blur-md px-3 py-0.5 rounded-full mb-2 flex items-center gap-1 shadow-sm">
                 <span className="text-yellow-500 text-[8px]">★</span>
-                <span className={`text-[8px] font-black uppercase tracking-[0.1em] ${isWin ? 'text-sky-600' : 'text-gray-600'}`}>
+                <span className={`text-[8px] font-black uppercase tracking-[0.1em] ${isWin ? 'text-red-600' : 'text-gray-600'}`}>
                   {isWin ? 'Victory' : 'Defeat'}
                 </span>
                 <span className="text-yellow-500 text-[8px]">★</span>
@@ -159,7 +159,7 @@ export default function PredictionNotification({ result, history, onClose }: Pre
 
             {/* Content Section - Micro */}
             <div className="px-5 pt-4 pb-5 text-center">
-               <h2 className={`text-xl font-black mb-1 tracking-tighter ${isWin ? 'text-sky-600' : 'text-gray-600'}`}>
+               <h2 className={`text-xl font-black mb-1 tracking-tighter ${isWin ? 'text-red-600' : 'text-gray-600'}`}>
                  {isWin ? 'YOU WIN!' : 'BETTER LUCK!'}
                </h2>
 
@@ -171,16 +171,16 @@ export default function PredictionNotification({ result, history, onClose }: Pre
                )}
 
                <div className="grid grid-cols-2 gap-2 mb-4">
-                  <div className={`p-2 rounded-xl border ${isWin ? 'bg-sky-50 border-sky-100' : 'bg-gray-50 border-gray-100'}`}>
-                    <span className={`text-[7px] font-black uppercase tracking-widest block mb-0.5 ${isWin ? 'text-sky-500' : 'text-gray-400'}`}>Pred</span>
+                  <div className={`p-2 rounded-xl border ${isWin ? 'bg-red-50 border-red-100' : 'bg-gray-50 border-gray-100'}`}>
+                    <span className={`text-[7px] font-black uppercase tracking-widest block mb-0.5 ${isWin ? 'text-red-500' : 'text-gray-400'}`}>Pred</span>
                     <span className="text-sm font-black text-gray-900">{result.prediction}</span>
                   </div>
-                  <div className={`p-2 rounded-xl border relative ${isWin ? 'bg-sky-500 border-sky-400' : 'bg-gray-400 border-gray-300'}`}>
+                  <div className={`p-2 rounded-xl border relative ${isWin ? 'bg-red-500 border-red-400' : 'bg-gray-400 border-gray-300'}`}>
                     <span className="text-[7px] font-black uppercase tracking-widest text-white/70 block mb-0.5">Actual</span>
                     <span className="text-sm font-black text-white">{result.actual}</span>
                     {isWin && (
-                      <div className="absolute -top-1 -right-1 w-4 h-4 bg-white rounded-full flex items-center justify-center shadow-sm border border-sky-100">
-                        <Check className="w-2 h-2 text-sky-500 font-bold" />
+                      <div className="absolute -top-1 -right-1 w-4 h-4 bg-white rounded-full flex items-center justify-center shadow-sm border border-red-100">
+                        <Check className="w-2 h-2 text-red-500 font-bold" />
                       </div>
                     )}
                   </div>
@@ -200,7 +200,7 @@ export default function PredictionNotification({ result, history, onClose }: Pre
                       <Server className="w-2 h-2" />
                       <span className="font-bold uppercase">Server</span>
                    </div>
-                   <span className="font-black text-gray-900 uppercase">LAXI-NX1</span>
+                   <span className="font-black text-gray-900 uppercase">ALPHA-NX1</span>
                  </div>
 
                  <div className="flex justify-between items-center text-[8px]">
@@ -208,13 +208,13 @@ export default function PredictionNotification({ result, history, onClose }: Pre
                       <Shield className="w-2 h-2" />
                       <span className="font-bold uppercase">Engine</span>
                    </div>
-                   <span className="font-black text-sky-600">Secure v4</span>
+                   <span className="font-black text-red-600">Secure v4</span>
                  </div>
                </div>
 
                <button 
                  onClick={onClose}
-                 className={`w-full py-3 rounded-lg flex items-center justify-center gap-1.5 text-[10px] font-black tracking-widest uppercase transition-all shadow-sm active:scale-95 ${isWin ? 'bg-sky-500 text-white hover:bg-sky-600' : 'bg-gray-800 text-white hover:bg-gray-900'}`}
+                 className={`w-full py-3 rounded-lg flex items-center justify-center gap-1.5 text-[10px] font-black tracking-widest uppercase transition-all shadow-sm active:scale-95 ${isWin ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-gray-800 text-white hover:bg-gray-900'}`}
                >
                  CONTINUE
                </button>
