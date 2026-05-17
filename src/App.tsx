@@ -5,7 +5,6 @@
 
 import React, { useState, useRef } from 'react';
 import { motion } from 'motion/react';
-import Header from './components/Header';
 import BottomNav from './components/BottomNav';
 import RightDrawer from './components/RightDrawer';
 import { NavItem } from './types';
@@ -55,10 +54,9 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 font-sans">
-      <Header onToggleDrawer={() => setIsDrawerOpen(!isDrawerOpen)} />
       <RightDrawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} history={wingo.predictionsHistory} />
       
-      <main className="pt-20 pb-24 px-4 max-w-lg mx-auto">
+      <main className="pt-4 pb-24 px-4 max-w-lg mx-auto">
         <div className={activeTab === 'home' ? 'block' : 'hidden'}>
           <WingoHome 
             currentPeriod={wingo.currentPeriod}
@@ -89,7 +87,7 @@ export default function App() {
         </div>
         <div className={activeTab === 'web' ? 'block' : 'hidden'}>
           {loadedUrl ? (
-            <div className="fixed inset-0 top-16 bottom-20 z-10 bg-white">
+            <div className="fixed inset-0 top-0 bottom-20 z-10 bg-white">
               <iframe 
                 src={loadedUrl} 
                 className="w-full h-full border-0"
