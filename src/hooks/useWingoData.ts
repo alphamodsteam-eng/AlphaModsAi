@@ -30,19 +30,20 @@ class AlphaServer {
             return { size, numbers: [1, 2], mode: "INITIALIZING" };
         }
 
-        const ninthNum = history[8].num;
-        const tenthNum = history[9].num;
-        const diff = Math.abs(ninthNum - tenthNum);
+        const res1 = history[0].num;
+        const res2 = history[1].num;
+        const res10 = history[9].num;
+        
+        // Formula: abs(abs(res1 - res2) - res10)
+        const diff = Math.abs(Math.abs(res1 - res2) - res10);
+        const finalVal = diff % 10;
         
         // Mapping: 0,1,2,3,4 = SMALL; 5,6,7,8,9 = BIG
-        // User wants REVERSED prediction:
-        // If diff is 5-9 (Big) -> Predict SMALL
-        // If diff is 0-4 (Small) -> Predict BIG
-        const predictedSize = (diff >= 5) ? "SMALL" : "BIG";
+        const predictedSize = (finalVal >= 5) ? "BIG" : "SMALL";
         
         return {
             size: predictedSize,
-            numbers: [ninthNum, tenthNum],
+            numbers: [res1, res2, res10],
             mode: `Alpha: ${predictedSize}`
         };
     }
