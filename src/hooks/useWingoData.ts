@@ -16,8 +16,10 @@ export interface LotteryResult {
 export interface PredictionRecord {
   period: string;
   prediction: string;
+  predictedNumbers?: number[];
   actual?: string;
-  status: 'Win' | 'Loss' | 'Pending';
+  actualNumber?: number;
+  status: 'Win' | 'Loss' | 'Pending' | 'Jackpot';
   confidence: number;
   num?: string;
   mode?: string;
@@ -138,13 +140,19 @@ export function useWingoData() {
               changed = true;
               return []; // Remove WAITING records silently
             }
-            const actual = parseInt(matchingResult.number) >= 5 ? "Big" : "Small";
+            const actualNum = parseInt(matchingResult.number);
+            const actual = actualNum >= 5 ? "Big" : "Small";
             const isWin = record.prediction === actual;
+            
+            // Jackpot check (if predictedNumbers exists in record)
+            const isJackpot = record.predictedNumbers?.includes(actualNum);
+            
             changed = true;
-            const updated = {
+            const updated: PredictionRecord = {
               ...record,
               actual,
-              status: isWin ? 'Win' : 'Loss' as const
+              actualNumber: actualNum,
+              status: isJackpot ? 'Jackpot' : (isWin ? 'Win' : 'Loss')
             };
             resolvedRecord = updated;
 
@@ -167,9 +175,11 @@ export function useWingoData() {
         const predictionValue = ultimateResult.pred === "BIG" ? "Big" : ultimateResult.pred === "SMALL" ? "Small" : ultimateResult.pred;
         
         if (predictionValue !== "WAITING") {
+          const predictedNums = ultimateResult.num.split(',').map(n => parseInt(n));
           const upcomingRecord: PredictionRecord = {
             period: upcomingPeriod,
             prediction: predictionValue,
+            predictedNumbers: predictedNums,
             status: 'Pending',
             confidence: ultimateResult.confidence,
             num: ultimateResult.num,
@@ -200,6 +210,14 @@ export function useWingoData() {
     localStorage.removeItem('predictionsHistory');
   }, []);
 
+  const deleteHistoryEntry = useCallback((period: string) => {
+    setPredictionsHistory(prev => {
+      const filtered = prev.filter(p => p.period !== period);
+      localStorage.setItem('predictionsHistory', JSON.stringify(filtered));
+      return filtered;
+    });
+  }, []);
+
   return {
     allResults,
     predictionsHistory,
@@ -208,6 +226,7 @@ export function useWingoData() {
     lastResolved,
     setLastResolved,
     clearHistory,
+    deleteHistoryEntry,
     currentPeriod: allResults.length > 0 ? addOneToBigNumber(allResults[0].issueNumber) : '--',
     nextPrediction: predictionsHistory.length > 0 && predictionsHistory[0].status === 'Pending' ? predictionsHistory[0].prediction : 'Calculating...',
     nextConfidence: predictionsHistory.length > 0 && predictionsHistory[0].status === 'Pending' ? predictionsHistory[0].confidence : 85

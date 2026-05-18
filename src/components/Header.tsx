@@ -25,8 +25,8 @@ export default function Header({ onToggleDrawer }: { onToggleDrawer: () => void 
         </motion.div>
       </div>
       
-      <h1 className="text-gray-900 font-black tracking-tight text-lg uppercase">
-        ALPHA <span className="text-red-500">SERVER V4</span>
+      <h1 className="text-gray-900 font-black tracking-tight text-lg uppercase text-center flex-1">
+        ALPHA <span className="text-red-500">ADVANCE SERVER</span>
       </h1>
       
       <button onClick={onToggleDrawer} className="p-2 hover:bg-gray-50 rounded-lg transition-colors" id="header-menu-btn">
