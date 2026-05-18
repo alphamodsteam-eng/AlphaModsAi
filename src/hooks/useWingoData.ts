@@ -1,55 +1,11 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { PredictionEngine } from '../services/predictionEngine';
 
 // ====================================================================
 // ALPHA SERVER - OMNI-ADAPTIVE PREDICTION ENGINE
 // ====================================================================
 
-class AlphaServer {
-    
-    constructor() {
-    }
-
-    parseHistory(rawHistory: any[]) {
-        if (!rawHistory || rawHistory.length === 0) return [];
-        return rawHistory.map(item => {
-            let num = parseInt(item.number ?? item);
-            if (isNaN(num)) num = Math.floor(Math.random() * 10);
-            return {
-                num: num,
-                size: num >= 5 ? "BIG" : "SMALL"
-            };
-        });
-    }
-
-    getPrediction(rawHistory: any[], currentPeriod: string) {
-        const history = this.parseHistory(rawHistory);
-        
-        if (history.length < 10) {
-            // Default prediction if less than 10 results
-            const size = history[0]?.size || "BIG";
-            return { size, numbers: [1, 2], mode: "INITIALIZING" };
-        }
-
-        const res1 = history[0].num;
-        const res2 = history[1].num;
-        const res10 = history[9].num;
-        
-        // Formula: abs(abs(res1 - res2) - res10)
-        const diff = Math.abs(Math.abs(res1 - res2) - res10);
-        const finalVal = diff % 10;
-        
-        // Mapping: 0,1,2,3,4 = SMALL; 5,6,7,8,9 = BIG
-        const predictedSize = (finalVal >= 5) ? "BIG" : "SMALL";
-        
-        return {
-            size: predictedSize,
-            numbers: [res1, res2, res10],
-            mode: `Alpha: ${predictedSize}`
-        };
-    }
-}
-
-
+const engine = new PredictionEngine();
 
 export interface LotteryResult {
   issueNumber: string;
@@ -68,8 +24,6 @@ export interface PredictionRecord {
 }
 
 const API_URL = '/api/lottery-history';
-
-const predictor = new AlphaServer();
 
 export function useWingoData() {
   const [allResults, setAllResults] = useState<LotteryResult[]>([]);
@@ -98,13 +52,13 @@ export function useWingoData() {
     return result;
   };
 
-  const advancedPredict = useCallback((results: LotteryResult[], currentPeriod: string) => {
-    const prediction = predictor.getPrediction(results, currentPeriod);
+  const advancedPredict = useCallback((results: LotteryResult[]) => {
+    const prediction = engine.getPrediction(results);
     return {
-        pred: prediction.size,
-        confidence: 88,
-        num: prediction.numbers.join(','),
-        mode: prediction.mode
+        pred: prediction.prediction,
+        confidence: prediction.confidence,
+        num: prediction.numValues.join(','),
+        mode: prediction.mode + " | " + prediction.logicName
     };
   }, []);
 
@@ -159,7 +113,7 @@ export function useWingoData() {
       }
       console.warn("Fetch issue:", msg);
     }
-  }, [advancedPredict]);
+  }, []);
 
   // Handle predictions history updates whenever allResults changes
   useEffect(() => {
@@ -193,6 +147,10 @@ export function useWingoData() {
               status: isWin ? 'Win' : 'Loss' as const
             };
             resolvedRecord = updated;
+
+            // Report result to engine for adaptive learning
+            engine.reportResult(actual.toUpperCase() as "BIG" | "SMALL");
+
             return [updated];
           }
         }
@@ -205,7 +163,7 @@ export function useWingoData() {
 
       // 2. Predict for the next period if not already predicted
       if (!updatedHistory.some(r => r.period === upcomingPeriod)) {
-        const ultimateResult = advancedPredict(allResults, upcomingPeriod);
+        const ultimateResult = advancedPredict(allResults);
         const predictionValue = ultimateResult.pred === "BIG" ? "Big" : ultimateResult.pred === "SMALL" ? "Small" : ultimateResult.pred;
         
         if (predictionValue !== "WAITING") {
@@ -251,7 +209,7 @@ export function useWingoData() {
     setLastResolved,
     clearHistory,
     currentPeriod: allResults.length > 0 ? addOneToBigNumber(allResults[0].issueNumber) : '--',
-    nextPrediction: allResults.length > 0 ? (advancedPredict(allResults, addOneToBigNumber(allResults[0].issueNumber)).pred === "BIG" ? "Big" : advancedPredict(allResults, addOneToBigNumber(allResults[0].issueNumber)).pred === "SMALL" ? "Small" : "WAITING") : 'Calculating...',
-    nextConfidence: allResults.length > 0 ? advancedPredict(allResults, addOneToBigNumber(allResults[0].issueNumber)).confidence : 85
+    nextPrediction: predictionsHistory.length > 0 && predictionsHistory[0].status === 'Pending' ? predictionsHistory[0].prediction : 'Calculating...',
+    nextConfidence: predictionsHistory.length > 0 && predictionsHistory[0].status === 'Pending' ? predictionsHistory[0].confidence : 85
   };
 };
