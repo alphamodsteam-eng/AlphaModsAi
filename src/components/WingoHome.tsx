@@ -41,7 +41,8 @@ export default function WingoHome({ currentPeriod, nextPrediction, nextConfidenc
   const multipliers = ['X1', 'X5', 'X10', 'X20', 'X50', 'X100'];
 
   const handleAction = (label: string) => {
-    onShowToast(`${label.toUpperCase()} SELECTED - PLEASE WAIT FOR RESULT`);
+    // Keep internal click handling but don't show UI alerts as requested
+    console.debug(`Action ${label} triggered internally`);
   };
 
   return (

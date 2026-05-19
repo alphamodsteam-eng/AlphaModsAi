@@ -14,179 +14,218 @@ export interface PredictionResult {
 }
 
 export class PredictionEngine {
+    private quantumWeights = [0.25, 0.20, 0.15, 0.10, 0.10, 0.05, 0.05, 0.04, 0.03, 0.03];
+    private quantumBias = 0.5;
+    private quantumLast10Numbers: number[] = [];
+    private recentPredictions: any[] = [];
+    private recentActualNumbers: number[] = [];
+    private lossStreak = 0;
+    private oppositeTrend = false;
+    private bigToSmallCount = 0;
+    private smallToBigCount = 0;
     private lastPredictedPeriod: string | null = null;
-    private lastPrediction: "BIG" | "SMALL" | null = null;
-    private totalWin = 0;
-    private totalLose = 0;
-    private consecutiveLosses = 0;
-    private safeMode = false;
+    private lastPredictedCategory: "BIG" | "SMALL" | null = null;
 
-    // ================= CORE UTILS =================
-    private getBigSmall(num: number): "BIG" | "SMALL" {
-        return num >= 5 ? "BIG" : "SMALL";
+    // ================== HELPER FUNCTIONS ==================
+    private sigmoid(x: number): number {
+        return 1 / (1 + Math.exp(-x));
     }
 
-    // ================= SAFE TREND LOGIC =================
-    private trendCore(lastNumbers: number[]): "BIG" | "SMALL" {
-        const bs = lastNumbers.map(n => this.getBigSmall(n));
-        
-        // Weighted recent trend
-        let weight = 1;
-        let bigScore = 0;
-        let smallScore = 0;
-        
-        // Extract last 8 (these are the most recent in the history)
-        const recentBs = bs.slice(0, 8);
-        // Python: for x in reversed(bs[-8:]):
-        // If our bs is [newest, ..., oldest], then bs[-8:] is the oldest 8.
-        // We'll follow the Python script's logic exactly as if the list is [newest...oldest]
-        const targetBs = bs.length >= 8 ? bs.slice(-8) : bs;
-        const reversedBs = [...targetBs].reverse();
-        
-        for (const x of reversedBs) {
-            if (x === "BIG") bigScore += weight;
-            else smallScore += weight;
-            weight += 1;
+    /**
+     * Predicts category (BIG or SMALL) based on historical numbers using neural-like weights
+     */
+    private quantumPredictCategory(historyNumbers: number[]): "BIG" | "SMALL" {
+        if (!historyNumbers || historyNumbers.length < 5) {
+            return Math.random() > 0.5 ? "BIG" : "SMALL";
         }
 
-        if (bigScore > smallScore) return "BIG";
-        if (smallScore > bigScore) return "SMALL";
-        return bs[0]; // fallback to most recent
+        // Convert numbers to binary: 1 for BIG (>=5), 0 for SMALL (<5)
+        const inputs = historyNumbers.slice(0, 10).map(n => n >= 5 ? 1 : 0);
+        
+        // Calculate weighted sum
+        let dot = 0;
+        for (let i = 0; i < Math.min(inputs.length, this.quantumWeights.length); i++) {
+            dot += inputs[i] * this.quantumWeights[i];
+        }
+        dot += this.quantumBias;
+        
+        // Apply sigmoid activation
+        const prob = this.sigmoid(dot);
+        let predictedCategory: "BIG" | "SMALL" = prob < 0.5 ? "BIG" : "SMALL";
+        
+        // Apply opposite trend flip if detected
+        if (this.oppositeTrend) {
+            predictedCategory = predictedCategory === "BIG" ? "SMALL" : "BIG";
+        }
+        
+        return predictedCategory;
     }
 
-    // ================= STREAK PROTECTION =================
-    private streakGuard(lastNumbers: number[]): "BIG" | "SMALL" {
-        const bs = lastNumbers.map(n => this.getBigSmall(n));
-        if (bs.length === 0) return "BIG";
+    /**
+     * Generates predicted numbers based on last number and target size
+     */
+    private getQuantumPredictionNumbers(lastNum: number, targetSize: 'BIG' | 'SMALL'): number[] {
+        const pool = targetSize === 'BIG' ? [5, 6, 7, 8, 9] : [0, 1, 2, 3, 4];
+        const map: Record<number, number[]> = {
+            0: [5, 8, 7], 1: [6, 9, 5], 2: [8, 0, 9], 3: [7, 1, 6], 4: [6, 2, 8],
+            5: [0, 3, 4], 6: [1, 4, 2], 7: [2, 5, 1], 8: [3, 6, 0], 9: [4, 7, 3]
+        };
         
-        let streak = 1;
-        const lastVal = bs[0]; // newest
-        for (let i = 1; i < bs.length; i++) {
-            if (bs[i] === lastVal) streak++;
+        let candidates = (lastNum !== undefined && map[lastNum]) ? [...map[lastNum]] : (targetSize === 'BIG' ? [5, 7, 8] : [0, 2, 3]);
+        
+        // Filter candidates to ensure they match target size
+        let filtered = candidates.filter(n => targetSize === 'BIG' ? n >= 5 : n < 5);
+        
+        // Ensure we have exactly 3 numbers from the pool
+        while (filtered.length < 3) {
+            const randomNum = pool[Math.floor(Math.random() * pool.length)];
+            if (!filtered.includes(randomNum)) {
+                filtered.push(randomNum);
+            }
+        }
+        
+        return filtered.slice(0, 3).sort((a, b) => a - b);
+    }
+
+    /**
+     * Updates prediction system with actual result for learning/adaptation
+     */
+    private updatePredictionResult(predictedSize: "BIG" | "SMALL", actualNumber: number) {
+        const actualSize = actualNumber >= 5 ? "BIG" : "SMALL";
+        const isWin = predictedSize === actualSize;
+        
+        // Store prediction record
+        this.recentPredictions.unshift({
+            predicted: predictedSize,
+            actual: actualSize,
+            number: actualNumber,
+            time: Date.now()
+        });
+        if (this.recentPredictions.length > 20) this.recentPredictions.pop();
+        
+        // Store actual numbers
+        this.recentActualNumbers.unshift(actualNumber);
+        if (this.recentActualNumbers.length > 20) this.recentActualNumbers.pop();
+        
+        // Calculate current loss streak
+        let currentLosses = 0;
+        for (let i = 0; i < this.recentPredictions.length; i++) {
+            if (this.recentPredictions[i].predicted !== this.recentPredictions[i].actual) currentLosses++;
             else break;
         }
+        this.lossStreak = currentLosses;
 
-        // Only flip on extreme streaks
-        if (streak >= 4) {
-            return lastVal === "BIG" ? "SMALL" : "BIG";
+        // NEW: After a win, automatically reset and perfectly normally Show predictions
+        if (isWin) {
+            this.oppositeTrend = false;
+            this.quantumBias = 0.5;
+            this.lossStreak = 0;
+            this.bigToSmallCount = 0;
+            this.smallToBigCount = 0;
+            return; // Exit early as system is normalized
         }
-        return lastVal;
-    }
-
-    // ================= GAP BALANCE =================
-    private gapBalance(lastNumbers: number[]): "BIG" | "SMALL" {
-        const bs = lastNumbers.map(n => this.getBigSmall(n));
-        const big = bs.filter(x => x === "BIG").length;
-        const small = bs.filter(x => x === "SMALL").length;
-
-        if (Math.abs(big - small) >= 5) {
-            return big > small ? "SMALL" : "BIG";
+        
+        // Track trend flips
+        let bToS = 0, sToB = 0;
+        for (let i = 0; i < Math.min(10, this.recentPredictions.length); i++) {
+            const r = this.recentPredictions[i];
+            if (r.predicted !== r.actual) {
+                if (r.predicted === 'BIG' && r.actual === 'SMALL') bToS++;
+                if (r.predicted === 'SMALL' && r.actual === 'BIG') sToB++;
+            }
         }
-        return bs[0];
-    }
-
-    // ================= PERIOD FILTER =================
-    private periodFilter(period: string): "BIG" | "SMALL" {
-        const lastFour = period.slice(-4);
-        const sum = Array.from(lastFour).reduce((acc, char) => acc + (parseInt(char) || 0), 0);
-        return sum % 2 === 0 ? "BIG" : "SMALL";
-    }
-
-    // ================= CONFIDENCE ENGINE =================
-    private confidenceVote(preds: ("BIG" | "SMALL")[]): { final: "BIG" | "SMALL", counts: Record<string, number> } {
-        const counts: Record<string, number> = { "BIG": 0, "SMALL": 0 };
-        preds.forEach(p => counts[p]++);
-
-        if (counts["BIG"] >= 3) {
-            return { final: "BIG", counts };
-        } else if (counts["SMALL"] >= 3) {
-            return { final: "SMALL", counts };
-        } else {
-            // Tie → follow trend_core (p1 is always index 0)
-            return { final: preds[0], counts };
+        this.bigToSmallCount = bToS;
+        this.smallToBigCount = sToB;
+        
+        // Activate opposite trend mode if 3+ flips detected
+        if (bToS >= 3 || sToB >= 3) {
+            this.oppositeTrend = true;
+            if (bToS >= 3) this.quantumBias = 0.8;   // Bias towards BIG
+            if (sToB >= 3) this.quantumBias = 0.2;   // Bias towards SMALL
         }
-    }
-
-    private getSmartNumbers(pred: 'BIG' | 'SMALL'): number[] {
-        const pool = pred === 'BIG' ? [5, 6, 7, 8, 9] : [0, 1, 2, 3, 4];
-        return pool.sort(() => Math.random() - 0.5).slice(0, 3);
+        
+        // Update history buffer
+        if (this.recentActualNumbers.length >= 10) {
+            this.quantumLast10Numbers = [...this.recentActualNumbers].slice(0, 10);
+        }
     }
 
     public reportResult(actual: 'BIG' | 'SMALL') {
-        // Method preserved for hook compatibility
-        // The engine now handles result tracking internally via getPrediction history check
+        // Preserved for hook compatibility
     }
 
     public getPrediction(history: any[]): PredictionResult {
         if (!history || history.length < 1) {
             return {
                 prediction: "BIG",
-                confidence: 75,
-                logicName: "VASCO STABLE PRO",
-                mode: "STABLE_TREND_ENGINE",
-                numValues: [5, 7, 9]
+                confidence: 55,
+                logicName: "RYOMEN SUKUNA",
+                mode: "QUANTUM_IDLE",
+                numValues: [5, 8]
             };
         }
 
-        // Result Check from previous prediction
         const latestResult = history[0];
         const latestPeriod = String(latestResult.period || latestResult.issueNumber || "");
         const latestNum = parseInt(latestResult.number || latestResult.result || latestResult);
-        const latestType = this.getBigSmall(latestNum);
 
-        if (this.lastPredictedPeriod && this.lastPredictedPeriod === latestPeriod) {
-            if (this.lastPrediction === latestType) {
-                this.totalWin++;
-                this.consecutiveLosses = 0;
-                this.safeMode = false;
-            } else {
-                this.totalLose++;
-                this.consecutiveLosses++;
-                if (this.consecutiveLosses >= 3) {
-                    this.safeMode = true;
-                }
-            }
-            // Reset to allow new prediction for next period
-            this.lastPredictedPeriod = null; 
+        // Learning Phase: If we had a prediction for this period, update the stats
+        if (this.lastPredictedPeriod && this.lastPredictedPeriod === latestPeriod && this.lastPredictedCategory) {
+            this.updatePredictionResult(this.lastPredictedCategory, latestNum);
         }
 
-        // Predict for Next Period
-        const lastIssue = latestPeriod;
-        const prefix = lastIssue.slice(0, -4);
-        const suffix = lastIssue.slice(-4);
-        const nextSuffix = (parseInt(suffix) + 1).toString().padStart(4, '0');
-        const nextIssue = prefix + nextSuffix;
-
-        // last_numbers = [int(str(r["number"])[-1]) for r in results[:12]]
-        const lastNumbers = history.slice(0, 12).map(r => {
-            const numStr = String(r.number || r.result || r);
-            return parseInt(numStr[numStr.length - 1]);
+        // Sync with live history
+        const allNumbers = history.slice(0, 10).map(item => {
+            const val = String(item.number || item.result || item);
+            return parseInt(val[val.length - 1]);
         });
+        this.quantumLast10Numbers = allNumbers;
 
-        const p1 = this.trendCore(lastNumbers);
-        const p2 = this.streakGuard(lastNumbers);
-        const p3 = this.gapBalance(lastNumbers);
-        const p4 = this.periodFilter(nextIssue);
-
-        let { final, counts } = this.confidenceVote([p1, p2, p3, p4]);
-
-        // SAFE MODE → force trend only
-        if (this.safeMode) {
-            final = p1;
+        let predictedCategory = this.quantumPredictCategory(this.quantumLast10Numbers);
+        
+        let confidencePercent = 76.5;
+        let model = "quantum";
+        
+        // NEW: If we got back to back 3 losses then reverse the final predictions
+        if (this.lossStreak >= 3) {
+            predictedCategory = predictedCategory === 'BIG' ? 'SMALL' : 'BIG';
+            confidencePercent = 88;
+            model = "quantum_alpha";
+        } else if (this.oppositeTrend) {
+            confidencePercent = 85;
+            model = "quantum_opposite";
         }
 
-        this.lastPrediction = final;
-        this.lastPredictedPeriod = nextIssue;
+        let predictedNumbers = this.getQuantumPredictionNumbers(allNumbers[0], predictedCategory);
 
-        const confidence = 70 + (counts[final] * 7);
+        // Setup for next check
+        const prefix = latestPeriod.slice(0, -4);
+        const suffix = latestPeriod.slice(-4);
+        const nextSuffix = (parseInt(suffix) + 1).toString().padStart(4, '0');
+        const nextPeriod = prefix + nextSuffix;
+
+        this.lastPredictedPeriod = nextPeriod;
+        this.lastPredictedCategory = predictedCategory;
 
         return {
-            prediction: final,
-            confidence: Math.min(99, confidence),
-            logicName: this.safeMode ? "VASCO (SAFE MODE)" : "VASCO STABLE PRO",
-            mode: "RALH_STABLE_PRO",
-            numValues: this.getSmartNumbers(final)
+            prediction: predictedCategory,
+            confidence: Math.round(confidencePercent),
+            logicName: "RYOMEN SUKUNA",
+            mode: model.toUpperCase(),
+            numValues: predictedNumbers
         };
     }
+
+    public reset() {
+        this.quantumLast10Numbers = [];
+        this.recentPredictions = [];
+        this.recentActualNumbers = [];
+        this.lossStreak = 0;
+        this.oppositeTrend = false;
+        this.bigToSmallCount = 0;
+        this.smallToBigCount = 0;
+        this.quantumBias = 0.5;
+    }
 }
+
 

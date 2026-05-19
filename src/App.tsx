@@ -56,7 +56,6 @@ export default function App() {
 
   const handleLoadPortal = () => {
     if (!portalUrl) {
-      showToast("PLEASE ENTER A URL FIRST");
       return;
     }
     let url = portalUrl.trim();
@@ -64,7 +63,6 @@ export default function App() {
       url = `https://${url}`;
     }
     setLoadedUrl(url);
-    showToast("WEBSITE LOADED SUCCESSFULLY");
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -259,11 +257,10 @@ export default function App() {
               ].map((item, i) => (
                 <button 
                   key={i} 
-                  onClick={() => showToast(`${item.label} SETTINGS COMING SOON`)}
                   className="bg-white p-4 rounded-2xl border border-gray-100 flex flex-col items-center gap-2 hover:border-red-200 transition-all active:scale-95"
                 >
                   <div className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center">
-                     <item.icon className="w-5 h-5 text-gray-500" />
+                      <item.icon className="w-5 h-5 text-gray-500" />
                   </div>
                   <span className="text-xs font-black text-gray-700 uppercase">{item.label}</span>
                 </button>
@@ -277,7 +274,6 @@ export default function App() {
                 placeholder="LET US KNOW WHAT YOU THINK..."
               />
               <button 
-                onClick={() => showToast("FEEDBACK SENT SUCCESSFULLY")}
                 className="w-full mt-4 bg-gray-900 text-white rounded-2xl p-4 text-sm font-black hover:bg-gray-800 transition-all uppercase active:scale-95"
               >
                 Submit Feedback
