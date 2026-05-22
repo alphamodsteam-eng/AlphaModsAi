@@ -212,40 +212,54 @@ export default function App() {
         </div>
         <div className={activeTab === 'profile' ? 'block' : 'hidden'}>
           <div className="flex flex-col pt-6 gap-6">
-            <div className="bg-white p-6 rounded-[32px] shadow-sm border border-gray-100 flex flex-col items-center">
-              <input type="file" ref={fileInputRef} onChange={handleImageUpload} className="hidden" accept="image/*" />
-              <motion.div 
-                animate={{ 
-                  scale: [1, 1.05, 1],
-                  boxShadow: [
-                    "0 0 0px rgba(239, 68, 68, 0.2)",
-                    "0 0 20px rgba(239, 68, 68, 0.4)",
-                    "0 0 0px rgba(239, 68, 68, 0.2)"
-                  ]
-                }}
-                transition={{ 
-                  duration: 3, 
-                  repeat: Infinity, 
-                  ease: "easeInOut" 
-                }}
-                className="w-24 h-24 bg-red-500 rounded-full mb-4 flex items-center justify-center text-white overflow-hidden cursor-pointer shadow-lg relative border-4 border-white"
-                onClick={() => fileInputRef.current?.click()}
-              >
-                {profileImage ? (
-                  <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-red-400 to-red-600 flex items-center justify-center">
-                    <User className="w-12 h-12 text-white fill-white/20" />
-                  </div>
-                )}
-              </motion.div>
-              <input 
-                type="text" 
-                value={profileName} 
-                onChange={handleNameChange}
-                className="text-2xl font-black text-gray-900 tracking-tight text-center border-0 focus:ring-0 uppercase"
-              />
-              <p className="text-gray-500 font-black text-sm uppercase">Pro User</p>
+            <div 
+              className="p-6 rounded-[32px] shadow-xl border border-gray-100 flex flex-col items-center relative overflow-hidden"
+              style={{ 
+                backgroundImage: 'url("https://iili.io/C94Lvl2.jpg")', 
+                backgroundSize: 'cover', 
+                backgroundPosition: 'center' 
+              }}
+            >
+              {/* Semi-transparent dark overlay to ensure text is fully readable */}
+              <div className="absolute inset-0 bg-black/45 z-0" />
+              
+              <div className="relative z-10 flex flex-col items-center w-full">
+                <input type="file" ref={fileInputRef} onChange={handleImageUpload} className="hidden" accept="image/*" />
+                <motion.div 
+                  animate={{ 
+                    scale: [1, 1.05, 1],
+                    boxShadow: [
+                      "0 0 0px rgba(239, 68, 68, 0.2)",
+                      "0 0 20px rgba(239, 68, 68, 0.4)",
+                      "0 0 0px rgba(239, 68, 68, 0.2)"
+                    ]
+                  }}
+                  transition={{ 
+                    duration: 3, 
+                    repeat: Infinity, 
+                    ease: "easeInOut" 
+                  }}
+                  className="w-24 h-24 bg-red-500 rounded-full mb-4 flex items-center justify-center text-white overflow-hidden cursor-pointer shadow-lg relative border-4 border-white"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  {profileImage ? (
+                    <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-red-400 to-red-600 flex items-center justify-center">
+                      <User className="w-12 h-12 text-white fill-white/20" />
+                    </div>
+                  )}
+                </motion.div>
+                <input 
+                  type="text" 
+                  value={profileName} 
+                  onChange={handleNameChange}
+                  className="text-2xl font-black text-white tracking-tight text-center border-0 bg-transparent focus:ring-0 uppercase w-full"
+                />
+                <span className="mt-2 bg-red-600 text-white font-black text-[10px] uppercase tracking-widest px-3 py-1 rounded-full shadow-lg shadow-red-600/30">
+                  Pro User
+                </span>
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -267,17 +281,29 @@ export default function App() {
               ))}
             </div>
 
-            <div className="bg-white p-6 rounded-[32px] shadow-sm border border-gray-100">
-              <h3 className="text-lg font-black text-gray-900 mb-4 tracking-tight">Send Feedback</h3>
-              <textarea 
-                className="w-full bg-gray-50 border-0 rounded-2xl p-4 text-sm focus:ring-2 focus:ring-red-500 min-h-[120px] font-black uppercase"
-                placeholder="LET US KNOW WHAT YOU THINK..."
-              />
-              <button 
-                className="w-full mt-4 bg-gray-900 text-white rounded-2xl p-4 text-sm font-black hover:bg-gray-800 transition-all uppercase active:scale-95"
-              >
-                Submit Feedback
-              </button>
+            <div 
+              className="p-6 rounded-[32px] shadow-lg border border-gray-100 relative overflow-hidden"
+              style={{
+                backgroundImage: 'url("https://iili.io/C94b66G.jpg")',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center'
+              }}
+            >
+              {/* Semi-transparent dark overlay */}
+              <div className="absolute inset-0 bg-black/50 z-0" />
+              
+              <div className="relative z-10">
+                <h3 className="text-lg font-black text-white mb-4 tracking-tight">Send Feedback</h3>
+                <textarea 
+                  className="w-full bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 text-sm text-white placeholder-white/50 focus:ring-2 focus:ring-red-500 min-h-[120px] font-black uppercase focus:outline-none"
+                  placeholder="LET US KNOW WHAT YOU THINK..."
+                />
+                <button 
+                  className="w-full mt-4 bg-red-600 hover:bg-red-700 text-white rounded-2xl p-4 text-sm font-black transition-all uppercase active:scale-95 shadow-lg shadow-red-600/30"
+                >
+                  Submit Feedback
+                </button>
+              </div>
             </div>
           </div>
         </div>
