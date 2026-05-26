@@ -25,7 +25,7 @@ async function startServer() {
     res.json({ status: "ok" });
   });
 
-  // Prediction route (Deterministic Random Generator)
+  // Prediction route (Deterministic Hash-based Generator)
   app.post("/api/predict", (req, res) => {
     const { history } = req.body;
     
@@ -34,56 +34,24 @@ async function startServer() {
         return res.json({ prediction: "BIG", numbers: [5, 6] });
     }
 
-    // Deterministic seed extraction with robust fallback
+    // Deterministic hash from latest period
     const latestItem = history[0];
     const latestPeriod = String(latestItem.issueNumber || latestItem.number || latestItem.id || latestItem);
-    const periodStr = latestPeriod.length >= 5 ? latestPeriod.slice(-5) : latestPeriod;
-    const seed = parseInt(periodStr) || Date.now();
-
-    // Seeded random generator
-    const random = (s: number) => {
-        let x = Math.sin(s++) * 10000;
-        return x - Math.floor(x);
-    };
-
-    const rnd = random(seed);
-
-    // 95% Chance: Random, 5% Check: Balance against last 10
-    let isBig = rnd > 0.5;
-
-    // 5% balance check based on last 10
-    if (rnd < 0.05) {
-        const last10 = history.slice(0, 10);
-        const bigCount = last10.filter((h: any) =>
-            parseInt(h.number || h) >= 5
-        ).length;
-        if (bigCount > 5) isBig = false;
-        else if (bigCount < 5) isBig = true;
+    
+    let hash = 0;
+    for (let i = 0; i < latestPeriod.length; i++) {
+        hash = ((hash << 5) - hash) + latestPeriod.charCodeAt(i);
+        hash = Math.abs(hash | 0);
     }
-
-    // Generate unique pair
+    
+    // Deterministic logic
+    const isBig = (hash % 2 === 0);
     const pool = isBig ? [5, 6, 7, 8, 9] : [0, 1, 2, 3, 4];
     
-    // Ensure we have enough pool items
-    if (pool.length < 2) { // Should not happen given the pools above
-        return res.json({ prediction: isBig ? "BIG" : "SMALL", numbers: [5, 6] });
-    }
-    
-    let n1 = pool[Math.floor(random(seed + 1) * pool.length)];
-    let n2;
-    // Attempt to find a different second number, with a safety break
-    let safety = 0;
-    do {
-        n2 = pool[Math.floor(random(seed + 2 + safety) * pool.length)];
-        safety++;
-    } while (n1 === n2 && safety < 10);
+    const n1 = pool[hash % pool.length];
+    const n2 = pool[(hash + 3) % pool.length];
 
-    // If still identical, force a different one
-    if (n1 === n2) {
-        n2 = pool.filter(n => n !== n1)[0] || pool[0];
-    }
-
-    // APPLY REVERSE LOGIC
+    // Reverse logic requested
     const finalPrediction = isBig ? "SMALL" : "BIG";
     const finalNumbers = [9 - n1, 9 - n2];
 
