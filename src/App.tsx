@@ -13,6 +13,7 @@ import { useWingoData } from './hooks/useWingoData';
 import WingoHome from './components/WingoHome';
 import WingoHistory from './components/WingoHistory';
 import PredictionNotification from './components/PredictionNotification';
+import TimeManagedSessions from './components/TimeManagedSessions';
 import { Settings, Shield, Clock, Crown, User, Copy } from 'lucide-react';
 
 export default function App() {
@@ -112,67 +113,22 @@ export default function App() {
           />
         </div>
         <div className={activeTab === 'sparkles' ? 'block' : 'hidden'}>
-          <div className="flex flex-col items-center justify-center pt-8">
-            <motion.div 
-              animate={{ 
-                rotate: [0, 5, -5, 0],
-                scale: [1, 1.05, 1]
-              }}
-              transition={{ duration: 4, repeat: Infinity }}
-              className="w-20 h-20 bg-red-500 rounded-[28px] flex items-center justify-center mb-6 shadow-xl shadow-red-200"
-            >
-              <Crown className="w-10 h-10 text-white" />
-            </motion.div>
-            <h2 className="text-3xl font-black text-gray-900 uppercase tracking-tighter">ALPHA ADVANCE SERVER</h2>
-            <p className="text-gray-400 mt-1 font-black uppercase text-[10px] tracking-[0.2em] mb-10">Alpha Neural AI Server V9 Ultimate</p>
+          <div className="flex flex-col pt-8 pb-6 gap-6">
+            <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tighter text-center">Safe Session Timings Plan 🛡️</h2>
+            <p className="text-gray-500 font-black text-[10px] uppercase tracking-[0.2em] text-center mb-2">Balanced and safer for stable flow.</p>
             
-            {wingo.predictionsHistory[0] && (
-              <div className="w-full space-y-5">
-                <div className="bg-white p-8 rounded-[40px] border border-red-100 shadow-2xl relative overflow-hidden">
-                   {/* Decorative glow */}
-                   <div className="absolute -top-20 -right-20 w-40 h-40 bg-red-500/10 blur-[60px] rounded-full" />
-                   
-                   <div className="space-y-6 relative z-10">
-                      <div className="flex justify-between items-end border-b border-gray-100 pb-4">
-                        <div>
-                          <p className="text-[10px] font-black text-red-500 uppercase tracking-widest mb-1">Engine</p>
-                          <p className="text-xs font-bold text-gray-400 font-mono tracking-tighter uppercase">{wingo.predictionsHistory[0].mode || 'STABLE_TREND'}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Next Period</p>
-                          <p className="text-lg font-bold text-gray-900 font-mono leading-none tracking-tighter">{wingo.predictionsHistory[0].period}</p>
-                        </div>
-                      </div>
+            <TimeManagedSessions />
 
-                      <div className="grid grid-cols-2 gap-8">
-                        <div>
-                          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Alpha Signal</p>
-                          <span className={`text-4xl font-black uppercase tracking-tighter ${wingo.predictionsHistory[0].prediction.toLowerCase() === 'big' ? 'text-amber-500' : 'text-blue-600'}`}>
-                            {wingo.predictionsHistory[0].prediction}
-                          </span>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Stable Pick</p>
-                          <span className="text-2xl font-black text-red-600 font-mono tracking-[0.2em]">
-                            {wingo.predictionsHistory[0].num}
-                          </span>
-                        </div>
-                      </div>
-                   </div>
-                </div>
-
-                <motion.button 
-                  whileTap={{ scale: 0.96 }}
-                  onClick={handleCopy}
-                  className="w-full bg-red-600 text-white font-black py-6 rounded-[32px] shadow-2xl shadow-red-500/20 transition-all uppercase tracking-[0.15em] flex items-center justify-center gap-3"
-                >
-                  <Copy className="w-5 h-5" />
-                  <span className={copyState === 'copied' ? 'text-green-400' : ''}>
-                    {copyState === 'copied' ? 'COPIED SUCCESSFULLY!' : 'Copy Prediction'}
-                  </span>
-                </motion.button>
-              </div>
-            )}
+            <div className="bg-gray-900 text-white p-8 rounded-3xl mt-4">
+              <h3 className="text-sm font-black uppercase tracking-tight mb-4 text-gray-300">Recommended Rules</h3>
+              <ul className="space-y-3 text-xs font-bold text-gray-100 uppercase">
+                <li className="flex gap-2"><span>❌</span> Avoid continuous over-betting</li>
+                <li className="flex gap-2"><span>✅</span> Take small gaps after 3–5 wins</li>
+                <li className="flex gap-2"><span>✅</span> Use balanced big/small entries</li>
+                <li className="flex gap-2"><span>✅</span> Avoid unstable midnight timings</li>
+                <li className="flex gap-2"><span>✅</span> Stop after target profit achieved</li>
+              </ul>
+            </div>
           </div>
         </div>
         <div className={activeTab === 'web' ? 'block' : 'hidden'}>

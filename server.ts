@@ -12,6 +12,7 @@ async function startServer() {
   const PORT = 3000;
 
   app.use(cors());
+  app.use(express.json());
 
   // Logging middleware
   app.use((req, res, next) => {
@@ -22,6 +23,50 @@ async function startServer() {
   // Health check
   app.get("/api/health", (req, res) => {
     res.json({ status: "ok" });
+  });
+
+  // Prediction route (Deterministic Random Generator)
+  app.post("/api/predict", (req, res) => {
+    const { history } = req.body;
+    if (!history || !Array.isArray(history) || history.length < 1) {
+      return res.status(400).json({ error: "Need history" });
+    }
+
+    // Deterministic seed from the latest period
+    const latestItem = history[0];
+    const latestPeriod = String(latestItem.issueNumber || latestItem);
+    const seed = parseInt(latestPeriod.slice(-5));
+
+    // Seeded random generator
+    const random = (s: number) => {
+        let x = Math.sin(s++) * 10000;
+        return x - Math.floor(x);
+    };
+
+    const rnd = random(seed);
+
+    // 95% Chance: Random, 5% Check: Balance against last 10
+    let isBig = rnd > 0.5;
+
+    // 5% balance check based on last 10
+    if (rnd < 0.05) {
+        const last10 = history.slice(0, 10);
+        const bigCount = last10.filter((h: any) =>
+            parseInt(h.number || h) >= 5
+        ).length;
+        if (bigCount > 5) isBig = false;
+        else if (bigCount < 5) isBig = true;
+    }
+
+    // Generate unique pair
+    const pool = isBig ? [5, 6, 7, 8, 9] : [0, 1, 2, 3, 4];
+    let n1 = pool[Math.floor(random(seed + 1) * pool.length)];
+    let n2;
+    do {
+        n2 = pool[Math.floor(random(seed + 2) * pool.length)];
+    } while (n1 === n2);
+
+    res.json({ prediction: isBig ? "BIG" : "SMALL", numbers: [n1, n2] });
   });
 
   // API Proxy Route

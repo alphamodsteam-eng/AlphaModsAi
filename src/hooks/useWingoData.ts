@@ -1,11 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { PredictionEngine } from '../services/predictionEngine';
+import { getPrediction } from '../services/predictionEngine';
 
 // ====================================================================
 // ALPHA SERVER - OMNI-ADAPTIVE PREDICTION ENGINE
 // ====================================================================
-
-const engine = new PredictionEngine();
 
 export interface LotteryResult {
   issueNumber: string;
@@ -53,16 +51,6 @@ export function useWingoData() {
     if (carry === 1) result = "1" + result;
     return result;
   };
-
-  const advancedPredict = useCallback((results: LotteryResult[]) => {
-    const prediction = engine.getPrediction(results);
-    return {
-        pred: prediction.prediction,
-        confidence: prediction.confidence,
-        num: prediction.numValues.join(','),
-        mode: prediction.mode + " | " + prediction.logicName
-    };
-  }, []);
 
   const fetchData = useCallback(async () => {
     try {
@@ -123,80 +111,73 @@ export function useWingoData() {
 
     const latestResult = allResults[0];
     const upcomingPeriod = addOneToBigNumber(latestResult.issueNumber);
-
+      
+    // Set pending resolutions
     setPredictionsHistory(prevHistory => {
-      let updatedHistory = [...prevHistory];
-      let changed = false;
+        let updatedHistory = [...prevHistory];
+        let changed = false;
 
-      // 1. Process pending predictions for the results we just got
-      // We check all potential pending ones in case we missed some intervals
-      let resolvedRecord: PredictionRecord | null = null;
-      updatedHistory = updatedHistory.flatMap(record => {
-        if (record.status === 'Pending') {
-          const matchingResult = allResults.find(r => r.issueNumber === record.period);
-          if (matchingResult) {
-            
-            if (record.prediction === 'WAITING') {
+        // 1. Process pending predictions for the results we just got
+        let resolvedRecord: PredictionRecord | null = null;
+        updatedHistory = updatedHistory.map(record => {
+          if (record.status === 'Pending') {
+            const matchingResult = allResults.find(r => r.issueNumber === record.period);
+            if (matchingResult) {
+              const actualNum = parseInt(matchingResult.number);
+              const actual = actualNum >= 5 ? "Big" : "Small";
+              const isWin = record.prediction === actual;
+              const isJackpot = record.predictedNumbers?.includes(actualNum);
+              
               changed = true;
-              return []; // Remove WAITING records silently
+              const updated = {
+                ...record,
+                actual,
+                actualNumber: actualNum,
+                status: isJackpot ? 'Jackpot' : (isWin ? 'Win' : 'Loss')
+              };
+              resolvedRecord = updated;
+              return updated;
             }
-            const actualNum = parseInt(matchingResult.number);
-            const actual = actualNum >= 5 ? "Big" : "Small";
-            const isWin = record.prediction === actual;
-            
-            // Jackpot check (if predictedNumbers exists in record)
-            const isJackpot = record.predictedNumbers?.includes(actualNum);
-            
-            changed = true;
-            const updated: PredictionRecord = {
-              ...record,
-              actual,
-              actualNumber: actualNum,
-              status: isJackpot ? 'Jackpot' : (isWin ? 'Win' : 'Loss')
-            };
-            resolvedRecord = updated;
-
-            // Report result to engine for adaptive learning
-            engine.reportResult(actual.toUpperCase() as "BIG" | "SMALL");
-
-            return [updated];
           }
+          return record;
+        });
+
+        if (resolvedRecord) {
+          setLastResolved(resolvedRecord);
         }
-        return [record];
-      });
-
-      if (resolvedRecord) {
-        setLastResolved(resolvedRecord);
-      }
-
-      // 2. Predict for the next period if not already predicted
-      if (!updatedHistory.some(r => r.period === upcomingPeriod)) {
-        const ultimateResult = advancedPredict(allResults);
-        const predictionValue = ultimateResult.pred === "BIG" ? "Big" : ultimateResult.pred === "SMALL" ? "Small" : ultimateResult.pred;
-        
-        if (predictionValue !== "WAITING") {
-          const predictedNums = ultimateResult.num.split(',').map(n => parseInt(n));
-          const upcomingRecord: PredictionRecord = {
-            period: upcomingPeriod,
-            prediction: predictionValue,
-            predictedNumbers: predictedNums,
-            status: 'Pending',
-            confidence: ultimateResult.confidence,
-            num: ultimateResult.num,
-            mode: ultimateResult.mode
-          };
-          updatedHistory = [upcomingRecord, ...updatedHistory];
-          changed = true;
+        if (changed) {
+            localStorage.setItem('predictionsHistory', JSON.stringify(updatedHistory));
         }
-      }
-
-      if (changed) {
-        localStorage.setItem('predictionsHistory', JSON.stringify(updatedHistory));
         return updatedHistory;
-      }
-      return prevHistory;
     });
-  }, [allResults, advancedPredict]);
+
+    // 2. Predict for the next period if not already predicted
+    const performPrediction = async () => {
+        const ultimateResult = await getPrediction(allResults);
+        const predictionValue = ultimateResult.prediction === "BIG" ? "Big" : "Small";
+        
+        setPredictionsHistory(prevHistory => {
+            if (!prevHistory.some(r => r.period === upcomingPeriod)) {
+                const upcomingRecord: PredictionRecord = {
+                    period: upcomingPeriod,
+                    prediction: predictionValue,
+                    predictedNumbers: ultimateResult.numValues,
+                    status: 'Pending',
+                    confidence: ultimateResult.confidence,
+                    num: ultimateResult.numValues.join(','),
+                    mode: ultimateResult.mode
+                };
+                const updated = [upcomingRecord, ...prevHistory];
+                localStorage.setItem('predictionsHistory', JSON.stringify(updated));
+                return updated;
+            }
+            return prevHistory;
+        });
+    };
+
+    performPrediction();
+        
+  }, [allResults]);
 
   useEffect(() => {
     setIsLoading(true);
