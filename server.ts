@@ -25,33 +25,20 @@ async function startServer() {
     res.json({ status: "ok" });
   });
 
-  // Prediction route (Deterministic Hash-based Generator)
+  // Prediction route (Truly Random Generator)
   app.post("/api/predict", (req, res) => {
-    const { history } = req.body;
+    // Generate Random Result (BIG or SMALL)
+    const isBig = Math.random() > 0.5;
     
-    // Fallback: If no history exists, return a safe default
-    if (!history || !Array.isArray(history) || history.length === 0) {
-        return res.json({ prediction: "BIG", numbers: [5, 6] });
-    }
-
-    // Deterministic hash from latest period
-    const latestItem = history[0];
-    const latestPeriod = String(latestItem.issueNumber || latestItem.number || latestItem.id || latestItem);
-    
-    let hash = 0;
-    for (let i = 0; i < latestPeriod.length; i++) {
-        hash = ((hash << 5) - hash) + latestPeriod.charCodeAt(i);
-        hash = Math.abs(hash | 0);
-    }
-    
-    // Deterministic logic
-    const isBig = (hash % 2 === 0);
+    // Choose numbers based on random selection
     const pool = isBig ? [5, 6, 7, 8, 9] : [0, 1, 2, 3, 4];
-    
-    const n1 = pool[hash % pool.length];
-    const n2 = pool[(hash + 3) % pool.length];
+    const n1 = pool[Math.floor(Math.random() * pool.length)];
+    let n2;
+    do {
+        n2 = pool[Math.floor(Math.random() * pool.length)];
+    } while (n1 === n2);
 
-    // Reverse logic requested
+    // Apply Reverse logic
     const finalPrediction = isBig ? "SMALL" : "BIG";
     const finalNumbers = [9 - n1, 9 - n2];
 
