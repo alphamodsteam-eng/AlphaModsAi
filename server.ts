@@ -28,14 +28,17 @@ async function startServer() {
   // Prediction route (Deterministic Random Generator)
   app.post("/api/predict", (req, res) => {
     const { history } = req.body;
-    if (!history || !Array.isArray(history) || history.length < 1) {
-      return res.status(400).json({ error: "Need history" });
+    
+    // Fallback: If no history exists, return a safe default
+    if (!history || !Array.isArray(history) || history.length === 0) {
+        return res.json({ prediction: "BIG", numbers: [5, 6] });
     }
 
-    // Deterministic seed from the latest period
+    // Deterministic seed extraction with robust fallback
     const latestItem = history[0];
-    const latestPeriod = String(latestItem.issueNumber || latestItem);
-    const seed = parseInt(latestPeriod.slice(-5));
+    const latestPeriod = String(latestItem.issueNumber || latestItem.number || latestItem.id || latestItem);
+    const periodStr = latestPeriod.length >= 5 ? latestPeriod.slice(-5) : latestPeriod;
+    const seed = parseInt(periodStr) || Date.now();
 
     // Seeded random generator
     const random = (s: number) => {
@@ -60,13 +63,31 @@ async function startServer() {
 
     // Generate unique pair
     const pool = isBig ? [5, 6, 7, 8, 9] : [0, 1, 2, 3, 4];
+    
+    // Ensure we have enough pool items
+    if (pool.length < 2) { // Should not happen given the pools above
+        return res.json({ prediction: isBig ? "BIG" : "SMALL", numbers: [5, 6] });
+    }
+    
     let n1 = pool[Math.floor(random(seed + 1) * pool.length)];
     let n2;
+    // Attempt to find a different second number, with a safety break
+    let safety = 0;
     do {
-        n2 = pool[Math.floor(random(seed + 2) * pool.length)];
-    } while (n1 === n2);
+        n2 = pool[Math.floor(random(seed + 2 + safety) * pool.length)];
+        safety++;
+    } while (n1 === n2 && safety < 10);
 
-    res.json({ prediction: isBig ? "BIG" : "SMALL", numbers: [n1, n2] });
+    // If still identical, force a different one
+    if (n1 === n2) {
+        n2 = pool.filter(n => n !== n1)[0] || pool[0];
+    }
+
+    // APPLY REVERSE LOGIC
+    const finalPrediction = isBig ? "SMALL" : "BIG";
+    const finalNumbers = [9 - n1, 9 - n2];
+
+    res.json({ prediction: finalPrediction, numbers: finalNumbers });
   });
 
   // API Proxy Route
