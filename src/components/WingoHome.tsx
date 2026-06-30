@@ -2,6 +2,20 @@ import { LotteryResult, PredictionRecord } from '../hooks/useWingoData';
 import { motion } from 'motion/react';
 import { useState, useEffect } from 'react';
 import { HelpCircle, ChevronRight, History, CheckCircle } from 'lucide-react';
+import { ScanningRadar } from './LottieAnimation';
+
+const NUMBER_IMAGES: Record<number, string> = {
+  0: 'https://i.postimg.cc/vZsq9nGm/num0-4-10.png',
+  1: 'https://i.postimg.cc/mDt8RNyD/num0-4-6.png',
+  2: 'https://i.postimg.cc/ryRQPjmw/num0-4-9.png',
+  3: 'https://i.postimg.cc/HLP9S81T/num0-4-1.png',
+  4: 'https://i.postimg.cc/K80Pz3zL/num0-4-2.png',
+  5: 'https://i.postimg.cc/jj9y6Vyd/num0-4-11.png',
+  6: 'https://i.postimg.cc/gjyRPnQV/num0-4-12.png',
+  7: 'https://i.postimg.cc/NfYmkk2T/num0-4-4.png',
+  8: 'https://i.postimg.cc/vHz9qxWb/num0-4-5.png',
+  9: 'https://i.postimg.cc/wBtmjWnY/num0-4-3.png',
+};
 
 interface WingoHomeProps {
   currentPeriod: string;
@@ -65,16 +79,15 @@ export default function WingoHome({ currentPeriod, nextPrediction, nextConfidenc
           
           <div className="flex flex-col gap-1 mb-0.5">
             <span className="text-[13px] font-bold tracking-tight">Wingo 1 Minute</span>
-            <div className="flex gap-1 overflow-x-auto scrollbar-none">
+            <div className="flex gap-1 items-center overflow-x-auto scrollbar-none h-[22px] min-[375px]:h-[24px]">
               {latestFive.map((res, i) => (
-                <div 
+                <img 
                   key={i} 
-                  className="w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-black shadow-lg relative overflow-hidden shrink-0"
-                  style={{ background: getBallColor(parseInt(res.number)) }}
-                >
-                  <div className="absolute top-0.5 left-1 w-1 h-1 bg-white/40 rounded-full blur-[0.5px]" />
-                  <span className="relative z-10">{res.number}</span>
-                </div>
+                  src={NUMBER_IMAGES[parseInt(res.number)]} 
+                  alt={res.number}
+                  className="w-5.5 h-5.5 min-[375px]:w-6 min-[375px]:h-6 object-contain select-none pointer-events-none drop-shadow-sm active:scale-95 transition-transform"
+                  referrerPolicy="no-referrer"
+                />
               ))}
             </div>
           </div>
@@ -107,6 +120,13 @@ export default function WingoHome({ currentPeriod, nextPrediction, nextConfidenc
         </div>
       </div>
 
+      {/* Dynamic AI Adaptive Prediction Track Widget - 20000% Photo Matching */}
+      <ScanningRadar 
+        currentPeriod={currentPeriod}
+        nextPrediction={nextPrediction}
+        predictionsHistory={predictionsHistory}
+      />
+
       {/* Control Panel - Compact Card */}
       <div className="bg-white rounded-[15px] p-3 shadow-[0_4px_25px_rgba(0,0,0,0.05)] border border-gray-50 space-y-4">
         
@@ -129,20 +149,35 @@ export default function WingoHome({ currentPeriod, nextPrediction, nextConfidenc
                 <div key={n} className="flex justify-center">
                   <motion.div 
                     animate={isJackpotPick ? { 
-                      scale: [1, 1.05, 1],
-                      boxShadow: ['0 0 0px rgba(16,185,129,0)', '0 0 15px rgba(16,185,129,0.5)', '0 0 0px rgba(16,185,129,0)'] 
+                      scale: [1, 1.06, 1],
+                      filter: [
+                        'drop-shadow(0 0 2px rgba(16,185,129,0.2))', 
+                        'drop-shadow(0 0 8px rgba(16,185,129,0.7))', 
+                        'drop-shadow(0 0 2px rgba(16,185,129,0.2))'
+                      ]
                     } : {}}
+                    whileHover={{ scale: 1.08 }}
+                    whileTap={{ scale: 0.9 }}
                     transition={{ duration: 2, repeat: Infinity }}
                     onClick={() => handleAction(`Number ${n}`)}
-                    className={`w-12 h-12 rounded-full relative flex items-center justify-center text-white text-[24px] font-black shadow-[0_3px_10px_rgba(0,0,0,0.12)] border-[2.5px] cursor-pointer active:scale-90 transition-transform ${isJackpotPick ? 'border-emerald-400' : 'border-white/20'}`}
-                    style={{ background: getBallColor(n) }}
+                    className="relative cursor-pointer select-none flex items-center justify-center"
                   >
-                    <span className="relative z-10">{n}</span>
-                    <div className="absolute top-1 left-2 w-3 h-3 bg-white/20 rounded-full blur-[0.5px]" />
-                    <div className="absolute bottom-1 right-2 w-2 h-2 bg-white/10 rounded-full" />
+                    {/* High-quality 3D transparent number button image */}
+                    <img 
+                      src={NUMBER_IMAGES[n]} 
+                      alt={`Number ${n}`} 
+                      className="w-[46px] h-[46px] min-[375px]:w-[52px] min-[375px]:h-[52px] sm:w-[58px] sm:h-[58px] object-contain select-none pointer-events-none drop-shadow-md"
+                      referrerPolicy="no-referrer"
+                    />
+                    
+                    {/* Glowing outer aura for predicted jackpot numbers */}
                     {isJackpotPick && (
-                      <div className="absolute -top-1 -right-1 bg-emerald-500 rounded-full p-0.5 border border-white shadow-sm z-20">
-                        <CheckCircle className="w-2.5 h-2.5 text-white" />
+                      <div className="absolute inset-[-2.5px] rounded-full border-2 border-emerald-400 animate-pulse pointer-events-none opacity-80" />
+                    )}
+                    
+                    {isJackpotPick && (
+                      <div className="absolute -top-1 -right-1 bg-emerald-500 rounded-full p-0.5 border border-white shadow-md z-20">
+                        <CheckCircle className="w-3 h-3 text-white" />
                       </div>
                     )}
                   </motion.div>

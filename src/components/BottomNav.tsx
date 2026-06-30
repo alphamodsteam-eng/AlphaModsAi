@@ -1,4 +1,4 @@
-import { Home, History, Sparkles, Globe, User } from 'lucide-react';
+import { Home, History, Sparkles, BarChart3, User } from 'lucide-react';
 import { motion } from 'motion/react';
 import { NavItem } from '../types';
 
@@ -12,7 +12,7 @@ export default function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
     { id: 'home', icon: Home, label: 'HOME' },
     { id: 'history', icon: History, label: 'HISTORY' },
     { id: 'sparkles', icon: Sparkles, label: 'PREDICT' },
-    { id: 'web', icon: Globe, label: 'WEB' },
+    { id: 'stats', icon: BarChart3, label: 'STATS' },
     { id: 'profile', icon: User, label: 'PROFILE' },
   ] as const;
 

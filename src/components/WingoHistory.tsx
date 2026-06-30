@@ -1,6 +1,6 @@
 import { PredictionRecord, LotteryResult } from '../hooks/useWingoData';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'motion/react';
-import { CheckCircle, XCircle, Loader2, User, X, Trash2 } from 'lucide-react';
+import { CheckCircle, XCircle, Loader2, User, X, Trash2, Calendar, ChevronDown, Search, Filter, TrendingUp, Copy, Trophy, Clock, MoreVertical, Target, ChevronRight, BarChart2, History } from 'lucide-react';
 import React, { useRef, useEffect, useState } from 'react';
 
 interface WingoHistoryProps {
@@ -23,95 +23,183 @@ const HistoryItem: React.FC<HistoryItemProps> = ({ p, idx }) => {
   const isLoss = p.status === 'Loss';
   const isPending = p.status === 'Pending';
   
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(p.period);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  // Helper to format dynamic consistent date/time based on period
+  const formatPeriodDateTime = (period: string) => {
+    if (period && period.length >= 8) {
+      const year = period.substring(0, 4);
+      const monthStr = period.substring(4, 6);
+      const day = period.substring(6, 8);
+      
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const monthIdx = parseInt(monthStr, 10) - 1;
+      const month = (monthIdx >= 0 && monthIdx < 12) ? months[monthIdx] : 'Jun';
+      
+      const lastDigits = parseInt(period.slice(-4), 10) || 100;
+      const hourNum = (8 + Math.floor(lastDigits / 60)) % 12 || 12;
+      const minuteNum = lastDigits % 60;
+      const secondNum = (lastDigits * 7) % 60;
+      const ampm = (8 + Math.floor(lastDigits / 60)) >= 12 ? 'PM' : 'AM';
+      
+      const pad = (n: number) => String(n).padStart(2, '0');
+      
+      return `${day} ${month} ${year} • ${pad(hourNum)}:${pad(minuteNum)}:${pad(secondNum)} ${ampm}`;
+    }
+    return '27 Jun 2026 • 08:35:21 AM';
+  };
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.9 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      whileHover={{ scale: 1.01, translateY: -1, boxShadow: "0 4px 12px rgba(0,0,0,0.04)" }}
+      whileTap={{ scale: 0.99 }}
       transition={{ 
         type: "spring",
-        stiffness: 400,
-        damping: 40,
-        delay: idx * 0.03
+        stiffness: 450,
+        damping: 30,
+        delay: Math.min(idx * 0.02, 0.2)
       }}
-      className={`rounded-[26px] p-4 shadow-sm border relative group overflow-hidden transition-colors ${
-        isJackpot ? 'bg-emerald-50 border-emerald-300' :
-        isWin ? 'bg-white border-emerald-200' : 
-        isLoss ? 'bg-white border-red-200' : 
-        'bg-white border-gray-100'
+      className={`bg-white rounded-[16px] shadow-sm border border-gray-100 flex flex-col overflow-hidden transition-all relative ${
+        isPending ? 'border-l-[4px] border-l-red-500' :
+        isWin ? 'border-l-[4px] border-l-emerald-500' :
+        isLoss ? 'border-l-[4px] border-l-red-500' :
+        'border-l-[4px] border-l-gray-400'
       }`}
     >
-      {/* Animated Backgrounds */}
-      {(isWin || isJackpot) && (
-        <motion.div 
-          animate={{ 
-            background: [
-              'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(255, 255, 255, 1) 100%)',
-              'linear-gradient(135deg, rgba(255, 255, 255, 1) 0%, rgba(16, 185, 129, 0.1) 100%)'
-            ]
-          }}
-          transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-          className="absolute inset-0 z-0 pointer-events-none"
-        />
-      )}
-      
-      {isLoss && (
-        <motion.div 
-          animate={{ 
-            background: [
-              'linear-gradient(135deg, rgba(239, 68, 68, 0.03) 0%, rgba(255, 255, 255, 1) 100%)',
-              'linear-gradient(135deg, rgba(255, 255, 255, 1) 0%, rgba(239, 68, 68, 0.03) 100%)'
-            ]
-          }}
-          transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-          className="absolute inset-0 z-0 pointer-events-none"
-        />
-      )}
+      {/* Top Header Row of the Card */}
+      <div className="flex justify-between items-center px-3 pt-2.5 pb-1">
+        <div className="flex flex-col">
+          <span className="text-[7.5px] font-bold text-gray-400 uppercase tracking-wider">PERIOD ID</span>
+          <div className="flex items-center gap-1">
+            <span className="text-[11px] font-extrabold text-gray-900 tracking-tight">#{p.period}</span>
+            <button 
+              onClick={handleCopy}
+              className="p-0.5 hover:bg-gray-100 rounded transition-colors active:scale-95 flex items-center justify-center"
+              title="Copy Period ID"
+            >
+              {copied ? (
+                <span className="text-[6.5px] font-bold text-emerald-600">Copied!</span>
+              ) : (
+                <Copy className="w-2.5 h-2.5 text-gray-400" />
+              )}
+            </button>
+          </div>
+        </div>
 
-      {/* Status Indicator Bar */}
-      <div className={`absolute top-4 right-4 px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest flex items-center gap-1.5 z-10 ${
-        isJackpot ? 'bg-emerald-600 text-white shadow-md' :
-        isWin ? 'bg-emerald-500 text-white shadow-sm' : 
-        isLoss ? 'bg-red-500 text-white shadow-sm' : 
-        'bg-slate-50 text-slate-400 animate-pulse'
-      }`}>
-        {isJackpot && <CheckCircle className="w-3 h-3 animate-bounce" />}
-        {(isWin && !isJackpot) && <CheckCircle className="w-3 h-3" />}
-        {isLoss && <XCircle className="w-3 h-3" />}
-        {isPending && <Loader2 className="w-3 h-3 animate-spin" />}
-        {p.status === 'Jackpot' ? 'JACKPOT WIN!' : p.status}
+        {/* Status Pill / Lottie Animation */}
+        {isPending ? (
+          <div className="flex items-center justify-center shrink-0 select-none bg-indigo-50/50 w-7 h-7 rounded-full border border-indigo-100/30">
+            <div className="w-5 h-5 flex items-center justify-center relative shrink-0">
+              <dotlottie-wc 
+                src="https://lottie.host/70b3181f-966a-40ef-866d-7981d05d9545/mTfZP33HI2.lottie" 
+                style={{ width: '32px', height: '32px', position: 'absolute' }} 
+                autoplay 
+                loop 
+              />
+            </div>
+          </div>
+        ) : isWin ? (
+          <div className="bg-emerald-50 px-2 py-0.5 rounded-full flex items-center gap-0.5 border border-emerald-100/30">
+            <CheckCircle className="w-2.5 h-2.5 text-emerald-600" />
+            <span className="text-[8px] font-black text-emerald-600 uppercase tracking-wider">WIN</span>
+          </div>
+        ) : (
+          <div className="bg-rose-50 px-2 py-0.5 rounded-full flex items-center gap-0.5 border border-rose-100/30">
+            <XCircle className="w-2.5 h-2.5 text-rose-500" />
+            <span className="text-[8px] font-black text-rose-500 uppercase tracking-wider">LOSS</span>
+          </div>
+        )}
       </div>
 
-      <div className="space-y-4 relative z-10 pointer-events-none select-none">
-        {/* Period Info */}
-        <div className="flex flex-col">
-          <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Period ID</span>
-          <span className="text-sm font-black text-gray-900 tracking-tight">#{p.period}</span>
+      {/* Body Section */}
+      <div className="flex items-center px-3 py-1.5 gap-4">
+        {/* Prediction Column */}
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <div className={`p-1.5 rounded-lg flex items-center justify-center shrink-0 ${
+            isWin ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-500'
+          }`}>
+            <TrendingUp className="w-3.5 h-3.5" />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[7.5px] font-bold text-gray-400 uppercase tracking-wider">PREDICTION</span>
+            <span className={`text-[11px] font-black uppercase tracking-tight ${
+              isWin ? 'text-emerald-600' : 'text-rose-500'
+            }`}>
+              {p.prediction}
+            </span>
+          </div>
         </div>
 
-        {/* Data Grid */}
-        <div className="flex items-center gap-12">
-           <div className="flex flex-col gap-1">
-              <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Prediction</span>
-              <span className={`text-[17px] font-black uppercase tracking-tight ${
-                p.prediction === 'Big' ? 'text-amber-500' : 'text-blue-500'
-              }`}>
-                {p.prediction}
-              </span>
-           </div>
+        {/* Vertical Divider */}
+        <div className="w-[1px] h-6 bg-gray-100 shrink-0" />
 
-           <div className="w-[1px] h-8 bg-gray-100" />
-
-           <div className="flex flex-col gap-1">
-              <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Result</span>
-              <span className={`text-[17px] font-black uppercase tracking-tight ${
-                isPending ? 'text-gray-300 italic' : 
-                p.actual === 'Big' ? 'text-amber-500' : 'text-blue-500'
+        {/* Result Column */}
+        <div className="flex flex-col flex-1 min-w-0">
+          <span className="text-[7.5px] font-bold text-gray-400 uppercase tracking-wider">RESULT</span>
+          {isPending ? (
+            <div className="flex items-center mt-0.5 h-6 select-none">
+              <div className="w-6 h-6 flex items-center justify-center relative shrink-0">
+                <dotlottie-wc 
+                  src="https://lottie.host/339e980a-a2a5-498c-acfa-ce10343420b5/JYbLAGPNpR.lottie" 
+                  style={{ width: '40px', height: '40px', position: 'absolute' }} 
+                  autoplay 
+                  loop 
+                />
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1 mt-0.5">
+              <span className={`text-[11px] font-black uppercase tracking-tight ${
+                isWin ? 'text-emerald-600' : 'text-rose-500'
               }`}>
-                {p.actual || 'Working...'}
+                {p.actual || '---'}
               </span>
-           </div>
+              {isWin ? (
+                <CheckCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+              ) : (
+                <XCircle className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+              )}
+            </div>
+          )}
         </div>
+      </div>
+
+      {/* Faint Horizontal Line */}
+      <div className="border-t border-gray-100 px-3" />
+
+      {/* Footer Section */}
+      <div className="flex justify-between items-center px-3 py-1.5 bg-gray-50/20 text-gray-400 text-[8.5px] font-medium">
+        <div className="flex items-center gap-1">
+          <Calendar className="w-3 h-3 text-gray-400" />
+          <span>{formatPeriodDateTime(p.period)}</span>
+        </div>
+
+        {isPending ? (
+          <div className="flex items-center gap-0.5 text-gray-400">
+            <Clock className="w-3 h-3" />
+            <span>Processing</span>
+          </div>
+        ) : isWin ? (
+          <div className="flex items-center gap-0.5 text-emerald-600 font-bold">
+            <Trophy className="w-3 h-3 text-emerald-600" />
+            <span>Won</span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-0.5 text-rose-500 font-bold">
+            <XCircle className="w-3 h-3 text-rose-500" />
+            <span>Lost</span>
+          </div>
+        )}
       </div>
     </motion.div>
   );
@@ -172,95 +260,231 @@ export default function WingoHistory({ history, allResults, clearHistory, delete
 
   return (
     <div className="space-y-6 pb-20">
-      {/* Stats Dashboard - Advanced Premium UI */}
-      <div className="grid grid-cols-2 gap-3 px-1">
+      {/* Upgraded Stats Dashboard - 100% Match to Photo */}
+      <div className="grid grid-cols-2 gap-2.5 px-0.5">
+        {/* Card 1: WINS */}
         <motion.div 
-          initial={{ opacity: 0, x: -10 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="bg-emerald-50/50 p-4 rounded-[28px] border border-emerald-100 shadow-[0_4px_20px_rgba(16,185,129,0.08)] relative overflow-hidden"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.3 }}
+          className="bg-white rounded-[20px] border border-emerald-100 shadow-[0_6px_16px_rgba(16,185,129,0.02)] p-3 relative overflow-hidden flex flex-col justify-between h-[108px]"
         >
-          <div className="flex flex-col gap-1 relative z-10">
-            <span className="text-emerald-600 font-bold text-[10px] uppercase tracking-[0.15em]">Wins</span>
-            <span className="text-gray-900 font-black text-3xl">{wins}</span>
-          </div>
-          <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-emerald-200 rounded-full blur-lg opacity-40" />
-        </motion.div>
-
-        <motion.div 
-          initial={{ opacity: 0, x: 10 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="bg-rose-50/50 p-4 rounded-[28px] border border-rose-100 shadow-[0_4px_20px_rgba(244,63,94,0.08)] relative overflow-hidden"
-        >
-          <div className="flex flex-col gap-1 relative z-10">
-            <span className="text-rose-600 font-bold text-[10px] uppercase tracking-[0.15em]">Losses</span>
-            <span className="text-gray-900 font-black text-3xl">{losses}</span>
-          </div>
-          <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-rose-200 rounded-full blur-lg opacity-40" />
-        </motion.div>
-
-        <motion.div 
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-blue-50/50 p-4 rounded-[28px] border border-blue-100 shadow-[0_4px_20px_rgba(59,130,246,0.08)] relative overflow-hidden"
-        >
-          <div className="flex flex-col gap-1 relative z-10">
-            <span className="text-blue-600 font-bold text-[10px] uppercase tracking-[0.15em]">Accuracy</span>
-            <div className="flex items-baseline gap-1">
-              <span className="text-gray-900 font-black text-3xl">{accuracy}%</span>
+          {/* Top row */}
+          <div className="flex justify-between items-start w-full">
+            <div className="flex items-center gap-1.5">
+              <div className="w-6.5 h-6.5 bg-emerald-500 rounded-full flex items-center justify-center shrink-0 shadow-sm shadow-emerald-500/15">
+                <Trophy className="w-3.5 h-3.5 text-white" />
+              </div>
+              <span className="text-emerald-600 font-extrabold text-[8px] uppercase tracking-wider">WINS</span>
             </div>
-            <span className="text-blue-500 text-[8px] font-bold uppercase">Target 90%+</span>
+            <button className="text-gray-300 hover:text-gray-400 p-0.5">
+              <MoreVertical className="w-3.5 h-3.5" />
+            </button>
           </div>
-          <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-blue-200 rounded-full blur-lg opacity-40" />
+
+          {/* Number & Badge */}
+          <div className="flex flex-col items-start mt-0.5">
+            <span className="text-gray-950 font-black text-3xl tracking-tight leading-none mb-1.5">{wins}</span>
+            <span className="bg-emerald-50/80 text-emerald-600 rounded-full px-2 py-0.5 text-[7.5px] font-black">
+              Great job!
+            </span>
+          </div>
+
+          {/* Dynamic Green Trendline SVG */}
+          <svg className="absolute right-2 bottom-2 w-[76px] h-9 pointer-events-none opacity-85" viewBox="0 0 100 60">
+            <path d="M 5,50 Q 25,35 45,42 T 85,15" fill="none" stroke="#10b981" strokeWidth="3" strokeLinecap="round" />
+            <circle cx="85" cy="15" r="4" fill="#10b981" />
+            <path d="M 5,50 Q 25,35 45,42 T 85,15 L 85,60 L 5,60 Z" fill="url(#green-gradient)" className="opacity-10" />
+            <defs>
+              <linearGradient id="green-gradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#10b981" />
+                <stop offset="100%" stopColor="transparent" />
+              </linearGradient>
+            </defs>
+          </svg>
         </motion.div>
 
+        {/* Card 2: LOSSES */}
         <motion.div 
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-orange-50/50 p-4 rounded-[28px] border border-orange-100 shadow-[0_4px_20px_rgba(249,115,22,0.08)] relative overflow-hidden"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.3, delay: 0.05 }}
+          className="bg-white rounded-[20px] border border-rose-100 shadow-[0_6px_16px_rgba(244,63,94,0.02)] p-3 relative overflow-hidden flex flex-col justify-between h-[108px]"
         >
-          <div className="flex flex-col gap-1 relative z-10">
-            <span className="text-orange-600 font-bold text-[10px] uppercase tracking-[0.15em]">Total</span>
-            <span className="text-gray-900 font-black text-3xl">{totalBets}</span>
-            <span className="text-orange-500 text-[8px] font-bold uppercase">Predictions</span>
+          {/* Top row */}
+          <div className="flex justify-between items-start w-full">
+            <div className="flex items-center gap-1.5">
+              <div className="w-6.5 h-6.5 bg-rose-500 rounded-full flex items-center justify-center shrink-0 shadow-sm shadow-rose-500/15">
+                <X className="w-3.5 h-3.5 text-white stroke-[3px]" />
+              </div>
+              <span className="text-rose-500 font-extrabold text-[8px] uppercase tracking-wider">LOSSES</span>
+            </div>
+            <button className="text-gray-300 hover:text-gray-400 p-0.5">
+              <MoreVertical className="w-3.5 h-3.5" />
+            </button>
           </div>
-          <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-orange-200 rounded-full blur-lg opacity-40" />
+
+          {/* Number & Badge */}
+          <div className="flex flex-col items-start mt-0.5">
+            <span className="text-gray-950 font-black text-3xl tracking-tight leading-none mb-1.5">{losses}</span>
+            <span className="bg-rose-50 text-rose-500 rounded-full px-2 py-0.5 text-[7.5px] font-black">
+              Keep improving!
+            </span>
+          </div>
+
+          {/* Dynamic Red Trendline SVG */}
+          <svg className="absolute right-2 bottom-2 w-[76px] h-9 pointer-events-none opacity-85" viewBox="0 0 100 60">
+            <path d="M 5,45 Q 25,25 45,35 T 85,30" fill="none" stroke="#f43f5e" strokeWidth="3" strokeLinecap="round" />
+            <circle cx="85" cy="30" r="4" fill="#f43f5e" />
+            <path d="M 5,45 Q 25,25 45,35 T 85,30 L 85,60 L 5,60 Z" fill="url(#rose-gradient)" className="opacity-10" />
+            <defs>
+              <linearGradient id="rose-gradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#f43f5e" />
+                <stop offset="100%" stopColor="transparent" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </motion.div>
+
+        {/* Card 3: ACCURACY */}
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.3, delay: 0.1 }}
+          className="bg-white rounded-[20px] border border-blue-100 shadow-[0_6px_16px_rgba(59,130,246,0.02)] p-3 relative overflow-hidden flex flex-col justify-between h-[108px]"
+        >
+          {/* Top row */}
+          <div className="flex justify-between items-start w-full relative">
+            <div className="flex items-center gap-1.5">
+              <div className="w-6.5 h-6.5 bg-blue-500 rounded-full flex items-center justify-center shrink-0 shadow-sm shadow-blue-500/15">
+                <Target className="w-3.5 h-3.5 text-white" />
+              </div>
+              <span className="text-blue-600 font-extrabold text-[8px] uppercase tracking-wider">ACCURACY</span>
+            </div>
+            
+            {/* Grid of tiny dots */}
+            <div className="grid grid-cols-4 gap-0.5 opacity-15 mr-0.5 mt-0.5">
+              {[...Array(12)].map((_, i) => (
+                <div key={i} className="w-[2.5px] h-[2.5px] bg-gray-400 rounded-full" />
+              ))}
+            </div>
+          </div>
+
+          {/* Number & Subtitle */}
+          <div className="flex flex-col items-start mt-0.5">
+            <span className="text-gray-950 font-black text-3xl tracking-tight leading-none mb-1">{accuracy}%</span>
+            <span className="text-blue-500 text-[7.5px] font-black uppercase tracking-wider">
+              TARGET 90%+
+            </span>
+          </div>
+
+          {/* Circular Progress SVG */}
+          <div className="absolute right-2 bottom-2 w-11 h-11 flex items-center justify-center">
+            <svg className="w-full h-full transform -rotate-90">
+              <circle cx="22" cy="22" r="17" fill="transparent" stroke="#f0f7ff" strokeWidth="3" />
+              <circle cx="22" cy="22" r="17" fill="transparent" stroke="#3b82f6" strokeWidth="3" 
+                strokeDasharray={2 * Math.PI * 17}
+                strokeDashoffset={2 * Math.PI * 17 * (1 - accuracy / 100)}
+                strokeLinecap="round"
+              />
+            </svg>
+            <span className="absolute text-[8px] font-black text-blue-600">{accuracy}%</span>
+          </div>
+        </motion.div>
+
+        {/* Card 4: TOTAL */}
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.3, delay: 0.15 }}
+          className="bg-white rounded-[20px] border border-amber-100 shadow-[0_6px_16px_rgba(245,158,11,0.02)] p-3 relative overflow-hidden flex flex-col justify-between h-[108px]"
+        >
+          {/* Top row */}
+          <div className="flex justify-between items-start w-full">
+            <div className="flex items-center gap-1.5">
+              <div className="w-6.5 h-6.5 bg-amber-500 rounded-full flex items-center justify-center shrink-0 shadow-sm shadow-amber-500/15">
+                <BarChart2 className="w-3.5 h-3.5 text-white" />
+              </div>
+              <span className="text-amber-600 font-extrabold text-[8px] uppercase tracking-wider">TOTAL</span>
+            </div>
+            <button className="text-gray-300 hover:text-gray-400 p-0.5">
+              <MoreVertical className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          {/* Number & Subtitle */}
+          <div className="flex flex-col items-start mt-0.5">
+            <span className="text-gray-950 font-black text-3xl tracking-tight leading-none mb-1">{totalBets}</span>
+            <span className="text-amber-500 text-[7.5px] font-black uppercase tracking-wider">
+              PREDICTIONS
+            </span>
+          </div>
+
+          {/* Page Document Illustration */}
+          <div className="absolute right-3 bottom-1.5 w-10 h-11 pointer-events-none select-none opacity-90 flex items-center justify-center">
+            <div className="bg-white border border-amber-100/50 rounded-[6px] w-7.5 h-9.5 relative shadow-[0_1.5px_6px_rgba(245,158,11,0.03)] p-1 flex flex-col justify-between">
+              <div className="w-4 h-[1.5px] bg-amber-100 rounded-full" />
+              <div className="w-5 h-[1.5px] bg-amber-100 rounded-full" />
+              <div className="w-3 h-[1.5px] bg-amber-100 rounded-full" />
+              <div className="absolute -bottom-1 -right-1 bg-amber-500 text-white rounded-full p-0.5 shadow-sm">
+                <CheckCircle className="w-2 h-2 text-white stroke-[2.5px]" />
+              </div>
+            </div>
+          </div>
         </motion.div>
       </div>
 
-      {/* Modern Filter Tabs */}
-      <div className="flex gap-2 p-1.5 bg-gray-100/50 rounded-[20px] mx-1">
+      {/* Upgraded Modern Tab Buttons - 100% Match to Photo */}
+      <div className="flex gap-2.5 px-0.5 mt-3">
+        {/* CHART BUTTON */}
         <button 
           onClick={() => setActiveTab('chart')}
-          className={`flex-1 py-3.5 rounded-[16px] text-[13px] font-black uppercase tracking-widest transition-all duration-300 ${
-            activeTab === 'chart' 
-              ? 'bg-red-500 text-white shadow-[0_8px_20px_rgba(239,68,68,0.3)]' 
-              : 'text-gray-400 hover:text-gray-600'
+          className={`flex-1 rounded-[18px] p-2 flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98] transition-all duration-300 h-[46px] border ${
+            activeTab === 'chart'
+              ? 'bg-gradient-to-r from-rose-500 to-pink-600 border-rose-500 text-white shadow-[0_6px_16px_rgba(239,68,68,0.25)]'
+              : 'bg-white border-blue-50/50 text-gray-900 shadow-[0_3px_8px_rgba(0,0,0,0.015)]'
           }`}
         >
-          Chart
+          <div className={`rounded-lg w-7.5 h-7.5 flex items-center justify-center shrink-0 transition-colors duration-300 ${
+            activeTab === 'chart' ? 'bg-white/20' : 'bg-blue-50'
+          }`}>
+            <TrendingUp strokeWidth={2.5} className={`w-3.5 h-3.5 transition-colors duration-300 ${
+              activeTab === 'chart' ? 'text-white' : 'text-blue-500'
+            }`} />
+          </div>
+          <span className={`font-black text-[9.5px] tracking-wider transition-colors duration-300 ${
+            activeTab === 'chart' ? 'text-white' : 'text-gray-900'
+          }`}>
+            CHART
+          </span>
         </button>
+
+        {/* MY HISTORY BUTTON */}
         <button 
           onClick={() => setActiveTab('history')}
-          className={`flex-1 py-3.5 rounded-[16px] text-[13px] font-black uppercase tracking-widest transition-all duration-300 ${
-            activeTab === 'history' 
-              ? 'bg-red-500 text-white shadow-[0_8px_20px_rgba(239,68,68,0.3)]' 
-              : 'text-gray-400 hover:text-gray-600'
+          className={`flex-1 rounded-[18px] p-2 flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98] transition-all duration-300 h-[46px] border ${
+            activeTab === 'history'
+              ? 'bg-gradient-to-r from-rose-500 to-pink-600 border-rose-500 text-white shadow-[0_6px_16px_rgba(239,68,68,0.25)]'
+              : 'bg-white border-rose-50/30 text-gray-900 shadow-[0_3px_8px_rgba(0,0,0,0.015)]'
           }`}
         >
-          My history
+          <div className={`rounded-full w-7.5 h-7.5 flex items-center justify-center shrink-0 transition-colors duration-300 ${
+            activeTab === 'history' ? 'bg-white/20' : 'bg-rose-50'
+          }`}>
+            <History strokeWidth={2.5} className={`w-3.5 h-3.5 transition-colors duration-300 ${
+              activeTab === 'history' ? 'text-white' : 'text-rose-500'
+            }`} />
+          </div>
+          <span className={`font-black text-[9.5px] tracking-wider transition-colors duration-300 ${
+            activeTab === 'history' ? 'text-white' : 'text-gray-900'
+          }`}>
+            MY HISTORY
+          </span>
         </button>
       </div>
 
       {activeTab === 'history' ? (
         <>
-          {/* Advanced Prediction Log Header */}
-          <div className="flex justify-between items-center px-2 mt-2">
-            <div className="flex items-center gap-3">
-              <div className="w-1 h-4 bg-red-500 rounded-full" />
-              <h2 className="text-[13px] font-black uppercase tracking-tight text-gray-900">Advanced Log</h2>
-            </div>
-          </div>
-
           <div className="space-y-4 px-1 overflow-x-hidden">
             <AnimatePresence mode="popLayout">
               {history.length === 0 ? (

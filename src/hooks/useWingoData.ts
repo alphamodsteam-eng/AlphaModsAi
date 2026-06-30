@@ -133,7 +133,7 @@ export function useWingoData() {
                 ...record,
                 actual,
                 actualNumber: actualNum,
-                status: isJackpot ? 'Jackpot' : (isWin ? 'Win' : 'Loss')
+                status: (isJackpot ? 'Jackpot' : (isWin ? 'Win' : 'Loss')) as 'Pending' | 'Jackpot' | 'Win' | 'Loss'
               };
               resolvedRecord = updated;
               return updated;
@@ -153,7 +153,7 @@ export function useWingoData() {
 
     // 2. Predict for the next period if not already predicted
     const performPrediction = async () => {
-        const ultimateResult = await getPrediction(allResults);
+        const ultimateResult = await getPrediction(allResults, upcomingPeriod);
         const predictionValue = ultimateResult.prediction === "BIG" ? "Big" : "Small";
         
         setPredictionsHistory(prevHistory => {

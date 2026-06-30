@@ -12,13 +12,17 @@ import { NavItem } from './types';
 import { useWingoData } from './hooks/useWingoData';
 import WingoHome from './components/WingoHome';
 import WingoHistory from './components/WingoHistory';
+import StatsDashboard from './components/StatsDashboard';
 import PredictionNotification from './components/PredictionNotification';
 import TimeManagedSessions from './components/TimeManagedSessions';
-import { Settings, Shield, Clock, Crown, User, Copy } from 'lucide-react';
+import { Settings, Shield, Clock, Crown, User, Copy, Trash2, X } from 'lucide-react';
+import { LottieTrashConfetti } from './components/LottieAnimation';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<NavItem>('home');
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isDeletingHistory, setIsDeletingHistory] = useState(false);
   const wingo = useWingoData();
   const [profileName, setProfileName] = useState(() => localStorage.getItem('profileName') || 'Alpha Advance Server');
   const [profileImage, setProfileImage] = useState(() => localStorage.getItem('profileImage') || null);
@@ -131,40 +135,8 @@ export default function App() {
             </div>
           </div>
         </div>
-        <div className={activeTab === 'web' ? 'block' : 'hidden'}>
-          {loadedUrl ? (
-            <div className="fixed inset-0 top-0 bottom-20 z-10 bg-white">
-              <iframe 
-                src={loadedUrl} 
-                className="w-full h-full border-0"
-                title="Portal Content"
-              />
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center pt-20">
-              <div className="w-20 h-20 bg-gray-100 rounded-3xl flex items-center justify-center mb-6">
-                <Settings className="w-10 h-10 text-gray-400" />
-              </div>
-              <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tighter mb-2">Web Browser</h2>
-              <p className="text-gray-500 mb-8 font-black text-center uppercase">Enter a URL to load your favorite website</p>
-              
-              <div className="w-full bg-white p-6 rounded-[32px] shadow-sm border border-gray-100 space-y-4">
-                <input 
-                  type="text" 
-                  placeholder="example.com"
-                  value={portalUrl}
-                  onChange={(e) => setPortalUrl(e.target.value)}
-                  className="w-full p-4 bg-gray-50 border-0 rounded-2xl text-sm focus:ring-2 focus:ring-red-500"
-                />
-                <button 
-                  onClick={handleLoadPortal}
-                  className="w-full bg-gray-900 text-white rounded-2xl p-4 text-sm font-black hover:bg-gray-800 transition-all uppercase"
-                >
-                  Load Website
-                </button>
-              </div>
-            </div>
-          )}
+        <div className={activeTab === 'stats' ? 'block' : 'hidden'}>
+          <StatsDashboard history={wingo.predictionsHistory} allResults={wingo.allResults} />
         </div>
         <div className={activeTab === 'profile' ? 'block' : 'hidden'}>
           <div className="flex flex-col pt-6 gap-6">
@@ -227,6 +199,15 @@ export default function App() {
               ].map((item, i) => (
                 <button 
                   key={i} 
+                  onClick={() => {
+                    if (item.label === 'Settings') {
+                      setIsSettingsOpen(true);
+                    } else if (item.label === 'History') {
+                      setActiveTab('history');
+                    } else {
+                      showToast(`${item.label} features are active & verified.`);
+                    }
+                  }}
                   className="bg-white p-4 rounded-2xl border border-gray-100 flex flex-col items-center gap-2 hover:border-red-200 transition-all active:scale-95"
                 >
                   <div className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center">
@@ -272,6 +253,90 @@ export default function App() {
         history={wingo.predictionsHistory}
         onClose={() => wingo.setLastResolved(null)} 
       />
+
+      {/* Settings Floating View with Lottie-style Deletion Animation */}
+      <AnimatePresence>
+        {isSettingsOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => {
+                if (!isDeletingHistory) setIsSettingsOpen(false);
+              }}
+              className="fixed inset-0 bg-gray-950/40 backdrop-blur-sm z-50 cursor-pointer"
+            />
+
+            {/* Floating Drawer */}
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 220 }}
+              className="fixed bottom-0 left-0 right-0 max-w-lg mx-auto bg-white rounded-t-[32px] p-6 z-50 border-t border-gray-100 shadow-[0_-12px_40px_rgba(0,0,0,0.15)] pb-10"
+            >
+              {/* Header drag line indicator */}
+              <div className="w-12 h-1 bg-gray-200 rounded-full mx-auto mb-5" />
+
+              <div className="flex justify-between items-center mb-4">
+                <div>
+                  <h3 className="text-gray-950 font-black text-lg tracking-tight uppercase">System Settings</h3>
+                  <p className="text-gray-400 font-bold text-[9px] tracking-wider uppercase">Alpha Server Configuration</p>
+                </div>
+                <button
+                  onClick={() => {
+                    if (!isDeletingHistory) setIsSettingsOpen(false);
+                  }}
+                  className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 hover:text-gray-600 active:scale-95 transition-all"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Lottie Animation Illustration inside the floating view */}
+              <LottieTrashConfetti 
+                isDeleting={isDeletingHistory} 
+                onComplete={() => {
+                  wingo.clearHistory();
+                  showToast("Real prediction history cleared successfully!");
+                  setIsDeletingHistory(false);
+                  setIsSettingsOpen(false);
+                }}
+              />
+
+              <div className="text-center space-y-2.5 px-3 mt-4">
+                <h4 className="text-gray-900 font-extrabold text-sm uppercase">Clear Prediction History?</h4>
+                <p className="text-gray-500 font-bold text-[10.5px] leading-relaxed uppercase">
+                  This action is permanent. All real prediction items, outcome history logs, and wins/losses stats will be completely wiped from this local browser storage.
+                </p>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col gap-2 mt-6">
+                <button
+                  disabled={isDeletingHistory}
+                  onClick={() => {
+                    setIsDeletingHistory(true);
+                  }}
+                  className="w-full h-12 bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white font-black text-xs uppercase tracking-widest rounded-2xl shadow-lg shadow-red-500/15 flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-50 disabled:pointer-events-none"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Clear All History & Stats
+                </button>
+                <button
+                  disabled={isDeletingHistory}
+                  onClick={() => setIsSettingsOpen(false)}
+                  className="w-full h-12 bg-gray-50 hover:bg-gray-100 text-gray-500 font-black text-xs uppercase tracking-widest rounded-2xl flex items-center justify-center active:scale-[0.98] transition-all disabled:pointer-events-none"
+                >
+                  Cancel
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* Toast Notification */}
       <AnimatePresence>
