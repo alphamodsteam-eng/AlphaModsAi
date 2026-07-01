@@ -65,35 +65,21 @@ const CORNER_SNAKE_PATH_2 = [
 
 export default function StatsDashboard({ history, allResults = [] }: StatsDashboardProps) {
   // Extract dynamic stats from prediction history if available
-  const settledRounds = history.filter(h => h.status === 'Win' || h.status === 'Loss').length;
-  const wins = history.filter(h => h.status === 'Win').length;
+  const settledRounds = history.filter(h => h.status === 'Win' || h.status === 'Loss' || h.status === 'Jackpot').length;
+  const wins = history.filter(h => h.status === 'Win' || h.status === 'Jackpot').length;
   const losses = history.filter(h => h.status === 'Loss').length;
   const accuracy = settledRounds > 0 ? Math.round((wins / settledRounds) * 100) : 0;
 
   // Exact fallback values matching the user's photo design
-  const displaySettled = settledRounds > 0 ? settledRounds : 7;
-  const displayWins = settledRounds > 0 ? wins : 4;
-  const displayLosses = settledRounds > 0 ? losses : 2;
-  const displayAccuracy = settledRounds > 0 ? accuracy : 67;
+  const displaySettled = settledRounds;
+  const displayWins = wins;
+  const displayLosses = losses;
+  const displayAccuracy = accuracy;
 
   // Find resolved history entries for our interactive chart
   const resolvedHistory = history.filter(h => h.status === 'Win' || h.status === 'Loss' || h.status === 'Jackpot');
-  const isDemo = resolvedHistory.length === 0;
 
-  const chartPoints = isDemo 
-    ? [
-        { period: '2801', fullPeriod: '20260629002801', accuracy: 50, confidence: 80, status: 'Win', prediction: 'Big', actual: 'Big', actualNumber: 8, isWin: true },
-        { period: '2802', fullPeriod: '20260629002802', accuracy: 50, confidence: 85, status: 'Loss', prediction: 'Small', actual: 'Big', actualNumber: 5, isWin: false },
-        { period: '2803', fullPeriod: '20260629002803', accuracy: 67, confidence: 92, status: 'Win', prediction: 'Big', actual: 'Big', actualNumber: 9, isWin: true },
-        { period: '2804', fullPeriod: '20260629002804', accuracy: 75, confidence: 88, status: 'Win', prediction: 'Small', actual: 'Small', actualNumber: 1, isWin: true },
-        { period: '2805', fullPeriod: '20260629002805', accuracy: 60, confidence: 78, status: 'Loss', prediction: 'Big', actual: 'Small', actualNumber: 2, isWin: false },
-        { period: '2806', fullPeriod: '20260629002806', accuracy: 67, confidence: 86, status: 'Win', prediction: 'Small', actual: 'Small', actualNumber: 0, isWin: true },
-        { period: '2807', fullPeriod: '20260629002807', accuracy: 71, confidence: 95, status: 'Win', prediction: 'Big', actual: 'Big', actualNumber: 7, isWin: true },
-        { period: '2808', fullPeriod: '20260629002808', accuracy: 75, confidence: 91, status: 'Win', prediction: 'Big', actual: 'Big', actualNumber: 6, isWin: true },
-        { period: '2809', fullPeriod: '20260629002809', accuracy: 80, confidence: 89, status: 'Win', prediction: 'Small', actual: 'Small', actualNumber: 3, isWin: true },
-        { period: '2810', fullPeriod: '20260629002810', accuracy: 80, confidence: 94, status: 'Win', prediction: 'Big', actual: 'Big', actualNumber: 8, isWin: true },
-      ]
-    : [...resolvedHistory]
+  const chartPoints = [...resolvedHistory]
         .slice(0, 10)
         .reverse()
         .map((p, index, arr) => {
@@ -429,7 +415,7 @@ export default function StatsDashboard({ history, allResults = [] }: StatsDashbo
               textAnchor="middle" 
               className="font-sans font-extrabold text-[15px] fill-slate-800"
             >
-              67%
+              {displayAccuracy}%
             </text>
             <motion.circle 
               cx="-30" cy="18" r="3" fill="#f59e0b" filter="drop-shadow(0 0 3px #f59e0b)"
